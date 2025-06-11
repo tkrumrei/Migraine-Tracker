@@ -24,6 +24,9 @@ struct CheckInView: View {
     let symptoms = ["Headache", "Nausea", "Sensitivity to Light", "Sensitivity to Sound", "Aura"]
     let environmentalFactors = ["Stress", "Weather Changes", "Lack of Sleep", "Certain Foods", "Hormonal Changes"]
     
+    // Mood emojis in order: 😭🙁😐🙂😁
+    let moodEmojis = ["😭", "🙁", "😐", "🙂", "😁"]
+    
     var body: some View {
         NavigationView {
             Form {
@@ -33,12 +36,12 @@ struct CheckInView: View {
                         .datePickerStyle(GraphicalDatePickerStyle())
                 }
                 
-                // Mood Section
+                // Mood Section with Emojis
                 Section(header: Text("How are you feeling?").font(.headline)) {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             Image(systemName: "face.smiling")
-                                .foregroundColor(.yellow)
+                                .foregroundColor(.blue)
                             Text("Mood")
                             Spacer()
                             Text(moodDescription)
@@ -48,9 +51,11 @@ struct CheckInView: View {
                         HStack(spacing: 5) {
                             ForEach(1...5, id: \.self) { index in
                                 Button(action: { mood = index }) {
-                                    Image(systemName: index <= mood ? "star.fill" : "star")
-                                        .font(.title2)
-                                        .foregroundColor(.yellow)
+                                    Text(moodEmojis[index - 1])
+                                        .font(.title)
+                                        .opacity(index == mood ? 1.0 : 0.3)
+                                        .scaleEffect(index == mood ? 1.2 : 1.0)
+                                        .animation(.easeInOut(duration: 0.2), value: mood)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                                 .frame(maxWidth: .infinity)
@@ -77,7 +82,7 @@ struct CheckInView: View {
                         VStack(alignment: .leading, spacing: 5) {
                             HStack {
                                 Image(systemName: "clock")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.purple)
                                 Text("Hours Slept: \(sleepHours, specifier: "%.1f") hours")
                             }
                             Slider(value: $sleepHours, in: 0...12, step: 0.5)
@@ -99,11 +104,7 @@ struct CheckInView: View {
                         }
                         
                         HStack(spacing: 5) {
-                            Image(systemName: "minus.circle")
-                                .foregroundColor(.gray)
                             Slider(value: $stressLevel, in: 1...10, step: 1)
-                            Image(systemName: "plus.circle")
-                                .foregroundColor(.gray)
                         }
                         
                         HStack {
@@ -211,6 +212,7 @@ struct CheckInView: View {
             print("Saving check-in data:", [
                 "date": selectedDate,
                 "mood": mood,
+                "moodEmoji": moodEmojis[mood - 1],
                 "sleepQuality": sleepQuality,
                 "sleepHours": sleepHours,
                 "stressLevel": stressLevel,
