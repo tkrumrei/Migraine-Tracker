@@ -288,7 +288,7 @@ struct DashboardView: View {
                                 .foregroundColor(.blue)
                             }
                         } else if let weather = weatherService.weatherData {
-                            VStack(spacing: 15) {
+                            HStack(spacing: 20) {
                                 VStack(alignment: .leading) {
                                     Text("Temperature")
                                         .font(.caption)
