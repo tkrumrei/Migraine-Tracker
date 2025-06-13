@@ -28,7 +28,7 @@ struct NotificationView: View {
             .foregroundColor(.white)
             .cornerRadius(10)
         }
-        .navigationTitle("Benachrichtigungen senden")
+        .navigationTitle("Test Notifications")
         .padding()
     }
 
