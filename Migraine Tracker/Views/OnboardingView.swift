@@ -2,10 +2,12 @@ import SwiftUI
 
 struct OnboardingView: View {
     @State private var currentStep = 0
-    @State private var migraineType = "Nausea"
-    @State private var migraineFrequency = "1-3 per M."
+    @State private var migraineType: String? = nil
+    @State private var migraineFrequency: String? = nil
     @State private var selectedExternalTriggers: Set<String> = []
     @State private var selectedInternalTriggers: Set<String> = []
+    @State private var customTypes: [String] = []
+    @State private var showAddTypeField = false
     @Binding var isPresented: Bool
     @EnvironmentObject var authViewModel: AuthViewModel
     
@@ -46,74 +48,167 @@ struct OnboardingView: View {
                 Spacer()
                 
                 // Navigation buttons
-                HStack {
-                    if currentStep > 0 {
-                        Button("Back") {
-                            currentStep -= 1
+                VStack(spacing:0) {
+                    Divider()
+                        .padding(.horizontal)
+                    HStack {
+                        if currentStep > 0 {
+                            Button("Back") {
+                                currentStep -= 1
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.cyan)
+                            .cornerRadius(10)
                         }
-                        .foregroundColor(.cyan)
-                    }
-                    
-                    Spacer()
-                    
-                    Button(currentStep < 2 ? "Next" : "Get Started") {
-                        if currentStep < 2 {
-                            currentStep += 1
-                        } else {
-                            // Save onboarding data and update user profile, then close
-                            saveOnboardingData()
-                            authViewModel.updateUserProfile(migraineType: migraineType, migraineFrequency: migraineFrequency)
-                            isPresented = false
+                        
+                        Spacer()
+                        
+                        Button(currentStep < 2 ? "Next" : "Get Started") {
+                            if currentStep < 2 {
+                                currentStep += 1
+                            } else {
+                                // Save onboarding data and update user profile, then close
+                                saveOnboardingData()
+                                authViewModel.updateUserProfile(
+                                    migraineType: migraineType ?? "Unknown",
+                                    migraineFrequency: migraineFrequency ?? "Unknown"
+                                )
+                                isPresented = false
+                            }
                         }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.cyan)
+                        .cornerRadius(10)
                     }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(Color.cyan)
-                    .cornerRadius(10)
+                    .padding()
                 }
-                .padding()
             }
-            .navigationTitle("On-Boarding \(currentStep + 1)/3")
-            .navigationBarTitleDisplayMode(.inline)
         }
     }
     
     // Step 1: Migraine Type & Frequency
     var step1View: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Migraine Type...")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.horizontal)
+        VStack(spacing: 30) {
             
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Type")
-                    .font(.headline)
-                Picker("Type", selection: $migraineType) {
-                    ForEach(migraineTypes, id: \.self) { type in
-                        Text(type).tag(type)
+            // Header mit Titel + Fortschritt
+            VStack(spacing: 10) {
+                    ZStack {
+                        Text("On-Boarding")
+                            .font(.title)
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .center)
+
+                        HStack {
+                            Spacer()
+                            Text("1/3")
+                                .font(.title)
+                                .foregroundColor(.secondary)
+                        }
                     }
+                    .padding(.horizontal)
+
+                    Divider()
+                        .padding(.horizontal)
                 }
-                .pickerStyle(MenuPickerStyle())
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
+
+            // Alle Inhalte mittig
+            HStack {
+                Spacer()
                 
-                Text("Frequency")
-                    .font(.headline)
-                    .padding(.top)
-                Picker("Frequency", selection: $migraineFrequency) {
-                    ForEach(frequencies, id: \.self) { freq in
-                        Text(freq).tag(freq)
+                VStack(alignment: .leading, spacing: 16) {
+                    // Überschrift
+                    Text("Migraine Type...")
+                        .font(.title2)
+                        .fontWeight(.bold)
+
+                    // GRAUER KASTEN um Type + Frequency
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Type-Zeile
+                        HStack {
+                            Text("Type")
+                                .font(.headline)
+                                .frame(width: 100, alignment: .leading)
+
+                            Menu {
+                                ForEach(migraineTypes, id: \.self) { type in
+                                    Button(action: {
+                                        migraineType = type
+                                    }) {
+                                        Text(type)
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(migraineType ?? "Choose a type")
+                                        .foregroundColor(migraineType == nil ? .gray : .primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down") // ↓ das Dropdown-Symbol
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.white)
+                                .cornerRadius(10)
+                            }
+                        }
+
+                        // Frequency-Zeile
+                        HStack {
+                            Text("Frequency")
+                                .font(.headline)
+                                .frame(width: 100, alignment: .leading)
+
+                            Menu {
+                                ForEach(frequencies, id: \.self) { type in
+                                    Button(action: {
+                                        migraineFrequency = type
+                                    }) {
+                                        Text(type)
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(migraineFrequency ?? "Choose a frequency")
+                                        .foregroundColor(migraineFrequency == nil ? .gray : .primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down") // ↓ das Dropdown-Symbol
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.white)
+                                .cornerRadius(10)
+                            }
+                        }
                     }
+                    .padding()
+                    .background(Color.gray.opacity(0.1)) // ← grauer Kasten
+                    .cornerRadius(12)
+
+                    // Plus-Button zentriert
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            showAddTypeField.toggle()
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .resizable()
+                                .frame(width: 36, height: 36)
+                                .foregroundColor(.cyan)
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 10)
+
                 }
-                .pickerStyle(MenuPickerStyle())
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
+                .frame(maxWidth: UIScreen.main.bounds.width * 0.9, alignment: .leading)
+
+                Spacer()
             }
-            .padding(.horizontal)
             
             Spacer()
         }
@@ -122,6 +217,27 @@ struct OnboardingView: View {
     // Step 2: Known Triggers
     var step2View: some View {
         ScrollView {
+            
+            VStack(spacing: 10) {
+                    ZStack {
+                        Text("On-Boarding")
+                            .font(.title)
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .center)
+
+                        HStack {
+                            Spacer()
+                            Text("2/3")
+                                .font(.title)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    Divider()
+                        .padding(.horizontal)
+                }
+            
             VStack(alignment: .leading, spacing: 20) {
                 Text("Known Triggers...")
                     .font(.title2)
@@ -190,6 +306,24 @@ struct OnboardingView: View {
     // Step 3: Overview
     var step3View: some View {
         VStack(alignment: .leading, spacing: 20) {
+            
+            ZStack {
+                // Zentrierter Titel
+                Text("On-Boarding")
+                    .font(.title)
+                    .bold()
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                // Fortschritt rechts oben
+                HStack {
+                    Spacer()
+                    Text("3/3")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.horizontal)
+            
             Text("Overview")
                 .font(.title2)
                 .fontWeight(.bold)
@@ -201,13 +335,13 @@ struct OnboardingView: View {
                         .foregroundColor(.cyan)
                     Text("Migraine Type:")
                         .fontWeight(.semibold)
-                    Text(migraineType)
+                    Text(migraineType ?? "None")
                 }
                 
                 HStack {
                     Text("Frequency:")
                         .fontWeight(.semibold)
-                    Text(migraineFrequency)
+                    Text(migraineFrequency ?? "None")
                 }
                 
                 Text("Triggers:")
