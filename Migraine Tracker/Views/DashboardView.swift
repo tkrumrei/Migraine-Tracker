@@ -165,14 +165,52 @@ struct CurrentWeather: Codable {
 struct DashboardView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var weatherService = WeatherService()
+    @State private var showRiskInfo = false
 
-    // Sample data
-    let riskLevel = 3
+    // Sample data für andere Trigger
     let topTriggers = [
         (name: "Weather", percentage: 90),
         (name: "Noise", percentage: 85),
         (name: "Sleep", percentage: 63)
     ]
+    
+    // Berechne Risiko basierend auf Wetterdaten
+    private var riskLevel: Int {
+        guard let weather = weatherService.weatherData else {
+            return 0 // Standard-Risiko wenn keine Daten verfügbar
+        }
+        
+        var risk = 0
+        
+        // Temperatur-Risiko (extreme Temperaturen erhöhen Risiko)
+        if weather.temperature < 5 || weather.temperature > 25 {
+            risk += 2
+        } else if weather.temperature < 10 || weather.temperature > 20 {
+            risk += 1
+        }
+        
+        // UV-Index Risiko (hoher UV-Index kann Migräne triggern)
+        if weather.uvIndex >= 8 {
+            risk += 2
+        } else if weather.uvIndex >= 6 {
+            risk += 1
+        }
+        
+        // Luftfeuchtigkeit (sehr hohe oder niedrige Werte)
+        if weather.humidity < 30 || weather.humidity > 80 {
+            risk += 1
+        }
+        
+        // Luftdruck (niedrige Werte können Migräne triggern)
+        if weather.airPressure < 1010 {
+            risk += 2
+        } else if weather.airPressure < 1015 {
+            risk += 1
+        }
+        
+        // Stelle sicher, dass Risiko zwischen 0 und 5 liegt
+        return min(max(risk, 0), 5)
+    }
     
     private var tipOfTheDay: String {
         switch riskLevel {
@@ -203,18 +241,35 @@ struct DashboardView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Risk Level Card
-                    VStack(spacing: 15) {
-                        Text("Today's Risk")
-                            .font(.headline)
-                        
-                        // Risk visualization
-                        HStack(spacing: 4) {
-                            ForEach(1...5, id: \.self) { level in
-                                Circle()
-                                    .fill(level <= riskLevel ? Color.orange : Color.gray.opacity(0.3))
-                                    .frame(width: 12, height: 12)
+                    // Today's Risk
+                    VStack(alignment: .leading, spacing: 15) {
+                        HStack {
+                            Text("Today's Risk")
+                                .font(.headline)
+                            
+                            Button(action: {
+                                showRiskInfo = true
+                            }) {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.blue)
+                                    .font(.title3)
                             }
+                            
+                            Spacer()
+                        }
+                        
+                        HStack(spacing: 8) {
+                            ForEach(0..<5, id: \.self) { index in
+                                Circle()
+                                    .fill(index < riskLevel ? Color.orange : Color.gray.opacity(0.3))
+                                    .frame(width: 20, height: 20)
+                            }
+                            
+                            Spacer()
+                            
+                            Text("\(riskLevel)/5")
+                                .font(.title2)
+                                .fontWeight(.semibold)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -396,6 +451,9 @@ struct DashboardView: View {
             .onAppear {
                 loadMuensterWeather()
             }
+            .sheet(isPresented: $showRiskInfo) {
+                RiskCalculationInfoView()
+            }
         }
     }
     
@@ -406,6 +464,82 @@ struct DashboardView: View {
             longitude: 7.6261,
             cityName: "Münster"
         )
+    }
+}
+
+struct RiskCalculationInfoView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("Risk Calculation")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding(.bottom)
+                    
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Temperature Risk")
+                            .font(.headline)
+                            .foregroundColor(.orange)
+                        
+                        Text("• Extreme temperatures (<5°C or >25°C): +2 risk points")
+                        Text("• Moderate temperatures (<10°C or >20°C): +1 risk point")
+                        Text("• Comfortable temperatures (10-20°C): No additional risk")
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("UV Index Risk")
+                            .font(.headline)
+                            .foregroundColor(.orange)
+                        
+                        Text("• Very high UV (≥8): +2 risk points")
+                        Text("• High UV (≥6): +1 risk point")
+                        Text("• Moderate UV (<6): No additional risk")
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Humidity Risk")
+                            .font(.headline)
+                            .foregroundColor(.orange)
+                        
+                        Text("• Very low (<30%) or very high (>80%): +1 risk point")
+                        Text("• Comfortable humidity (30-80%): No additional risk")
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Air Pressure Risk")
+                            .font(.headline)
+                            .foregroundColor(.orange)
+                        
+                        Text("• Low pressure (<1010 hPa): +2 risk points")
+                        Text("• Slightly low pressure (<1015 hPa): +1 risk point")
+                        Text("• Normal pressure (≥1015 hPa): No additional risk")
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Risk Levels")
+                            .font(.headline)
+                            .foregroundColor(.blue)
+                        
+                        Text("• 0-1: Low risk")
+                        Text("• 2-3: Moderate risk")
+                        Text("• 4-5: High risk")
+                    }
+                    
+                    Text("The total risk score is calculated by adding all individual risk factors and is capped between 0 and 5.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .padding(.top)
+                }
+                .padding()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: Button("Close") {
+                presentationMode.wrappedValue.dismiss()
+            })
+        }
     }
 }
 
