@@ -174,7 +174,24 @@ struct DashboardView: View {
         (name: "Sleep", percentage: 63)
     ]
     
-    let tipOfTheDay = "Today's migraine risk is slightly elevated. Try to keep your environment quiet and stay well-rested."
+    private var tipOfTheDay: String {
+        switch riskLevel {
+        case 0:
+            return "Great news! Your migraine risk is very low today. This is a perfect day to engage in your favorite activities and enjoy life to the fullest."
+        case 1:
+            return "Your migraine risk is low today. Keep up your healthy habits and stay hydrated. It's a good day to tackle any tasks you've been putting off."
+        case 2:
+            return "Your migraine risk is slightly elevated today. Consider avoiding known triggers and maintain a regular sleep schedule. Take breaks when needed."
+        case 3:
+            return "Today's migraine risk is moderate. Try to keep your environment quiet, stay well-rested, and avoid stress. Consider having your medication ready."
+        case 4:
+            return "Your migraine risk is high today. Take extra precautions: avoid bright lights, loud noises, and stressful situations. Plan a calm, relaxing day."
+        case 5:
+            return "Your migraine risk is very high today. Consider staying in a quiet, dark environment and avoid all known triggers. Keep medication close and rest as much as possible."
+        default:
+            return "Monitor your symptoms and take care of yourself today."
+        }
+    }
     
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -231,12 +248,12 @@ struct DashboardView: View {
                     
                     // Tip of the Day
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Tip of the day")
+                        Text("Tip of the Day")
                             .font(.headline)
                         
                         Text(tipOfTheDay)
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
