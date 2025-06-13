@@ -190,7 +190,7 @@ struct CheckInView: View {
         case 2: return "Not Great"
         case 3: return "Okay"
         case 4: return "Good"
-        case 5: return "Great!"
+        case 5: return "Great"
         default: return ""
         }
     }
