@@ -10,16 +10,10 @@ import SwiftUI
 // Main app content view
 struct ContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @State private var showOnboarding = false
-    
     var body: some View {
         Group {
             if authViewModel.isLoggedIn {
-                if authViewModel.currentUser?.migraineType.isEmpty ?? true {
-                    OnboardingView(isPresented: $showOnboarding)
-                } else {
-                    MainTabView()
-                }
+                MainTabView()
             } else {
                 LoginView()
             }
