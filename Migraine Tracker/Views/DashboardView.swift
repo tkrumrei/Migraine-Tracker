@@ -231,6 +231,13 @@ struct DashboardView: View {
         }
     }
     
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, d MMMM yyyy"
+        formatter.locale = Locale(identifier: "en_EN")
+        return formatter
+    }
+    
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
@@ -246,6 +253,10 @@ struct DashboardView: View {
                         HStack {
                             Text("Today's Risk")
                                 .font(.headline)
+                            
+                            Text(dateFormatter.string(from: Date()))
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
                             
                             Button(action: {
                                 showRiskInfo = true
