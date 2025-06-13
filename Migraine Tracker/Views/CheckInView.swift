@@ -31,9 +31,8 @@ struct CheckInView: View {
         NavigationView {
             Form {
                 // Date Section
-                Section(header: Text("Date").font(.headline)) {
-                    DatePicker("Select date", selection: $selectedDate, displayedComponents: [.date])
-                        .datePickerStyle(GraphicalDatePickerStyle())
+                Section {
+                    DateSelectionView(selectedDate: $selectedDate)
                 }
                 
                 // Mood Section with Emojis
@@ -261,5 +260,23 @@ struct CheckInView_Previews: PreviewProvider {
         NavigationView {
             CheckInView(selectedSymptoms: .constant(["Headache"]), selectedFactors: .constant(["Stress"]))
         }
+    }
+}
+
+struct DateSelectionView: View {
+    @Binding var selectedDate: Date
+    var accentColor: Color = Color(red: 48/255, green: 181/255, blue: 255/255) // #30B5FF
+
+    var body: some View {
+        HStack {
+            Text("Date:").font(.headline)
+            Spacer()
+            DatePicker("Select Date", selection: $selectedDate, in: ...Date(), displayedComponents: .date)
+                .labelsHidden()
+            Image(systemName: "calendar").foregroundColor(accentColor)
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .cornerRadius(10)
     }
 }
