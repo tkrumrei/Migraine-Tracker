@@ -4,24 +4,24 @@ import UserNotifications
 struct NotificationView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Button("Erinnerung senden") {
-                sendNotification(title: " Erinnerung", body: "Vergessen Sie nicht, heute Ihre Migräne zu protokollieren!")
+            Button("Send Reminder") {
+                sendNotification(title: "Reminder", body: "Don't forget to log your migraine today!")
             }
             .padding()
             .background(Color.blue)
             .foregroundColor(.white)
             .cornerRadius(10)
 
-            Button("Tipp senden") {
-                sendNotification(title: "Gesundheitstipp", body: "Viel Wasser zu trinken kann die Häufigkeit von Migräneanfällen verringern.")
+            Button("Send Tip") {
+                sendNotification(title: "Health Tip", body: "Drinking plenty of water can reduce the frequency of migraine attacks.")
             }
             .padding()
             .background(Color.green)
             .foregroundColor(.white)
             .cornerRadius(10)
 
-            Button("Wetter-Warnung senden") {
-                sendNotification(title: "Wetter-Warnung", body: "Ein Sturm nähert sich. Das könnte ein Auslöser für Sie sein.")
+            Button("Send Weather Alert") {
+                sendNotification(title: "Weather Alert", body: "A storm is approaching. This could be a trigger for you.")
             }
             .padding()
             .background(Color.orange)
@@ -38,14 +38,14 @@ struct NotificationView: View {
         content.body = body
         content.sound = .default
 
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false) // 5 Sekunden Verzögerung
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false) // 1 Sekunde Verzögerung
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
 
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Fehler beim Senden der Benachrichtigung: \(error.localizedDescription)")
+                print("Error sending notification: \(error.localizedDescription)")
             } else {
-                print("Benachrichtigung geplant: \(title)")
+                print("Notification scheduled: \(title)")
             }
         }
     }

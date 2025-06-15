@@ -202,9 +202,9 @@ struct DashboardView: View {
         }
         
         // Luftdruck (niedrige Werte können Migräne triggern)
-        if weather.airPressure < 1010 {
+        if weather.airPressure < 1005 || weather.airPressure > 1025  {
             risk += 2
-        } else if weather.airPressure < 1015 {
+        } else if weather.airPressure < 1010 || weather.airPressure > 1020 {
             risk += 1
         }
         
@@ -372,6 +372,8 @@ struct DashboardView: View {
                             }
                         } else if let weather = weatherService.weatherData {
                             HStack(spacing: 20) {
+                                // Temperature
+                                let tempRisk = temperatureRisk(weather.temperature)
                                 VStack(alignment: .leading) {
                                     Text("Temperature")
                                         .font(.caption)
@@ -379,8 +381,11 @@ struct DashboardView: View {
                                     Text("\(Int(weather.temperature))°C")
                                         .font(.title3)
                                         .fontWeight(.semibold)
+                                        .foregroundColor(tempRisk == 2 ? .red : (tempRisk == 1 ? .orange : .primary))
                                 }
                                 
+                                // UV Index
+                                let uvRisk = uvIndexRisk(weather.uvIndex)
                                 VStack(alignment: .leading) {
                                     Text("UV-Index")
                                         .font(.caption)
@@ -388,8 +393,11 @@ struct DashboardView: View {
                                     Text("\(weather.uvIndex)")
                                         .font(.title3)
                                         .fontWeight(.semibold)
+                                        .foregroundColor(uvRisk == 2 ? .red : (uvRisk == 1 ? .orange : .primary))
                                 }
                                 
+                                // Humidity
+                                let humidityRisk = humidityRisk(weather.humidity)
                                 VStack(alignment: .leading) {
                                     Text("Humidity")
                                         .font(.caption)
@@ -397,8 +405,11 @@ struct DashboardView: View {
                                     Text("\(weather.humidity)%")
                                         .font(.title3)
                                         .fontWeight(.semibold)
+                                        .foregroundColor(humidityRisk == 2 ? .red : (humidityRisk == 1 ? .orange : .primary))
                                 }
                                 
+                                // Air Pressure
+                                let pressureRisk = airPressureRisk(weather.airPressure)
                                 VStack(alignment: .leading) {
                                     Text("Air Pressure")
                                         .font(.caption)
@@ -406,6 +417,7 @@ struct DashboardView: View {
                                     Text("\(weather.airPressure) hPa")
                                         .font(.title3)
                                         .fontWeight(.semibold)
+                                        .foregroundColor(pressureRisk == 2 ? .red : (pressureRisk == 1 ? .orange : .primary))
                                 }
                             }
                         } else {
@@ -475,6 +487,41 @@ struct DashboardView: View {
             longitude: 7.6261,
             cityName: "Münster"
         )
+    }
+    
+    // Risk calculation helper functions
+    private func temperatureRisk(_ temperature: Double) -> Int {
+        if temperature < 5 || temperature > 25 {
+            return 2
+        } else if temperature < 10 || temperature > 20 {
+            return 1
+        }
+        return 0
+    }
+    
+    private func uvIndexRisk(_ uvIndex: Int) -> Int {
+        if uvIndex >= 8 {
+            return 2
+        } else if uvIndex >= 6 {
+            return 1
+        }
+        return 0
+    }
+    
+    private func humidityRisk(_ humidity: Int) -> Int {
+        if humidity < 30 || humidity > 80 {
+            return 1
+        }
+        return 0
+    }
+    
+    private func airPressureRisk(_ pressure: Int) -> Int {
+        if pressure < 1005 || pressure > 1025 {
+            return 2
+        } else if pressure < 1010 || pressure > 1020 {
+            return 1
+        }
+        return 0
     }
 }
 
