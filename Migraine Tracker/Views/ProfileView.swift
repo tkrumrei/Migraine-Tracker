@@ -1,6 +1,15 @@
 import SwiftUI
 import UserNotifications
 
+// Add this at the top level of the file to create a binding for the preview
+private struct OnboardingPreviewWrapper: View {
+    @State private var isPresented = false
+    
+    var body: some View {
+        OnboardingView(isPresented: $isPresented)
+    }
+}
+
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
 
@@ -28,7 +37,7 @@ struct ProfileView: View {
             .listRowBackground(Color(.systemGray6)) // Gray background for section
 
             Section(header: Text("Settings")) {
-                NavigationLink(destination: Text("Onboarding Placeholder")) {
+                NavigationLink(destination: OnboardingView(isPresented: .constant(false))) {
                     Label("Edit Onboarding", systemImage: "doc.text.magnifyingglass")
                 }
                 .listRowBackground(Color(.systemGray6))
