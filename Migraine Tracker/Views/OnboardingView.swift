@@ -187,25 +187,48 @@ struct OnboardingView: View {
                 }
                 .padding()
                 
-                // Content based on current step
-                Group {
-                    switch currentStep {
-                    case 0:
-                        step1View
-                    case 1:
-                        step2View
-                    case 2:
-                        step3View
-                    default:
-                        EmptyView()
+                VStack(spacing: 10) {
+                    ZStack {
+                        Text("On-Boarding")
+                            .font(.title)
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .center)
+
+                        HStack {
+                            Spacer()
+                            Text("\(currentStep + 1)/3")
+                                .font(.title)
+                                .foregroundColor(.secondary)
+                        }
                     }
+                    .padding(.horizontal)
+
+                    Divider()
+                        .padding(.horizontal)
                 }
-                .animation(.easeInOut, value: currentStep)
                 
+                ScrollView{
+                    // Content based on current step
+                    Group {
+                        switch currentStep {
+                        case 0:
+                            step1View
+                        case 1:
+                            step2View
+                        case 2:
+                            step3View
+                        default:
+                            EmptyView()
+                        }
+                    }
+                    .animation(.easeInOut, value: currentStep)
+                }
+                    
                 Spacer()
                 
+
                 // Navigation buttons
-                VStack(spacing:0) {
+                VStack(spacing:10) {
                     Divider()
                         .padding(.horizontal)
                     HStack {
@@ -241,7 +264,8 @@ struct OnboardingView: View {
                         .background(Color.cyan)
                         .cornerRadius(10)
                     }
-                    .padding(.bottom, 80)
+                    .padding(.bottom, 70)
+                    .padding(.horizontal, 10)
                 }
             }
         }
@@ -250,27 +274,6 @@ struct OnboardingView: View {
     // Step 1: Migraine Type & Frequency
     var step1View: some View {
         VStack(spacing: 30) {
-            
-            // Header mit Titel + Fortschritt
-            VStack(spacing: 10) {
-                ZStack {
-                    Text("On-Boarding")
-                        .font(.title)
-                        .bold()
-                        .frame(maxWidth: .infinity, alignment: .center)
-
-                    HStack {
-                        Spacer()
-                        Text("1/3")
-                            .font(.title)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.horizontal)
-
-                Divider()
-                    .padding(.horizontal)
-            }
 
             // Alle Inhalte mittig
             HStack {
@@ -453,26 +456,6 @@ struct OnboardingView: View {
         }
         return ScrollView {
             VStack(spacing: 30) {
-                // Header mit Titel + Fortschritt
-                VStack(spacing: 10) {
-                    ZStack {
-                        Text("On-Boarding")
-                            .font(.title)
-                            .bold()
-                            .frame(maxWidth: .infinity, alignment: .center)
-
-                        HStack {
-                            Spacer()
-                            Text("2/3")
-                                .font(.title)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    Divider()
-                        .padding(.horizontal)
-                }
 
                 // Inhalt
                 HStack {
@@ -616,28 +599,9 @@ struct OnboardingView: View {
 
         _ = triggerStates.filter { internalTriggers.contains($0.key) && $0.value == true }.map(\.key)
         _ = triggerStates.filter { internalTriggers.contains($0.key) && $0.value == false }.map(\.key)
+        
         return ScrollView {
-            VStack(spacing: 30) {
-                // Header mit Titel + Fortschritt
-                VStack(spacing: 10) {
-                    ZStack {
-                        Text("On-Boarding")
-                            .font(.title)
-                            .bold()
-                            .frame(maxWidth: .infinity, alignment: .center)
-
-                        HStack {
-                            Spacer()
-                            Text("3/3")
-                                .font(.title)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    Divider()
-                        .padding(.horizontal)
-                }
+            VStack{
                 Text("Overview")
                     .font(.title2)
                     .fontWeight(.bold)
