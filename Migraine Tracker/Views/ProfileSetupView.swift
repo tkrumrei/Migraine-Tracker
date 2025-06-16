@@ -8,6 +8,15 @@ struct ProfileSetupView: View {
     var body: some View {
         VStack(spacing: 30) {
             Spacer()
+            
+            Image("Logo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 180, height: 180)
+                .onAppear {
+                    print("ℹ️ Attempting to load image named: Logo")
+                }
+            
 
             Text("Setting up your")
                 .font(.title2)

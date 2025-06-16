@@ -15,6 +15,7 @@ struct OnboardingView: View {
     @State private var showExternalTriggerSheet = false
     @State private var showInternalTriggerSheet = false
     @State private var showAddTypeField = false
+    @State private var navigateToSetup = false
     @Binding var isPresented: Bool
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var authService: AuthService
@@ -173,9 +174,9 @@ struct OnboardingView: View {
             return .gray
         }
     }
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Progress indicator
                 HStack(spacing: 8) {
@@ -207,7 +208,7 @@ struct OnboardingView: View {
                         .padding(.horizontal)
                 }
                 
-                ScrollView{
+                ScrollView {
                     // Content based on current step
                     Group {
                         switch currentStep {
@@ -223,12 +224,11 @@ struct OnboardingView: View {
                     }
                     .animation(.easeInOut, value: currentStep)
                 }
-                    
+                
                 Spacer()
                 
-
                 // Navigation buttons
-                VStack(spacing:10) {
+                VStack(spacing: 10) {
                     Divider()
                         .padding(.horizontal)
                     HStack {
@@ -242,20 +242,19 @@ struct OnboardingView: View {
                             .background(Color.cyan)
                             .cornerRadius(10)
                         }
-                        
+
                         Spacer()
-                        
+
                         Button(currentStep < 2 ? "Next" : "Get Started") {
                             if currentStep < 2 {
                                 currentStep += 1
                             } else {
-                                // Save onboarding data and update user profile, then close
                                 saveOnboardingData()
                                 authViewModel.updateUserProfile(
                                     migraineType: migraineType ?? "Unknown",
                                     migraineFrequency: migraineFrequency ?? "Unknown"
                                 )
-                                isPresented = false
+                                navigateToSetup = true
                             }
                         }
                         .foregroundColor(.white)
@@ -267,6 +266,14 @@ struct OnboardingView: View {
                     .padding(.bottom, 70)
                     .padding(.horizontal, 10)
                 }
+            }
+            .navigationDestination(isPresented: $navigateToSetup) {
+                ProfileSetupView(showMainTabView: $showMainTabView)
+                    .navigationBarBackButtonHidden(true)
+            }
+            .navigationDestination(isPresented: $showMainTabView) {
+                MainTabView()
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
