@@ -241,7 +241,7 @@ struct OnboardingView: View {
                         .background(Color.cyan)
                         .cornerRadius(10)
                     }
-                    .padding()
+                    .padding(.bottom, 80)
                 }
             }
         }
