@@ -271,9 +271,8 @@ struct OnboardingView: View {
                 ProfileSetupView(showMainTabView: $showMainTabView)
                     .navigationBarBackButtonHidden(true)
             }
-            .navigationDestination(isPresented: $showMainTabView) {
+            .fullScreenCover(isPresented: $showMainTabView) {
                 MainTabView()
-                    .navigationBarBackButtonHidden(true)
             }
         }
     }

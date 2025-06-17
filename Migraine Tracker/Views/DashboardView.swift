@@ -245,8 +245,7 @@ struct DashboardView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ScrollView {
+        ScrollView {
                 VStack(spacing: 20) {
                     // Today's Risk
                     VStack(alignment: .leading, spacing: 15) {
@@ -469,14 +468,12 @@ struct DashboardView: View {
                     .padding(.horizontal)
                 }
                 .padding(.vertical)
-            }
-            .navigationBarHidden(true)
-            .onAppear {
-                loadMuensterWeather()
-            }
-            .sheet(isPresented: $showRiskInfo) {
-                RiskCalculationInfoView()
-            }
+        }
+        .onAppear {
+            loadMuensterWeather()
+        }
+        .sheet(isPresented: $showRiskInfo) {
+            RiskCalculationInfoView()
         }
     }
     
