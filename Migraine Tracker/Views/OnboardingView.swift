@@ -168,7 +168,6 @@ struct OnboardingView: View {
     private var isCurrentStepValid: Bool {
         switch currentStep {
         case 0: return isStep1Valid
-        case 1: return isStep2Valid
         default: return true
         }
     }
@@ -176,8 +175,7 @@ struct OnboardingView: View {
     private var validationMessage: String {
         switch currentStep {
         case 0: return "Please select both your migraine type and frequency before continuing."
-        case 1: return "Please identify at least one external or internal trigger before continuing."
-        default: return "Please complete all required fields."
+default: return "Please complete all required fields."
         }
     }
 
