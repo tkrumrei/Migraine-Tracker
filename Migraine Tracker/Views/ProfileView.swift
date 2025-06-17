@@ -42,27 +42,27 @@ struct ProfileView: View {
                 }
                 .listRowBackground(Color(.systemGray6))
                 
-                NavigationLink(destination: Text("Profile Settings Placeholder")) {
+                NavigationLink(destination: EditProfileView()) {
                     Label("Edit Profile", systemImage: "person.fill")
                 }
                 .listRowBackground(Color(.systemGray6))
                 
-                NavigationLink(destination: Text("App Settings Placeholder")) {
+                NavigationLink(destination: AppSettingsView()) {
                     Label("App Settings", systemImage: "gear")
                 }
                 .listRowBackground(Color(.systemGray6))
                 
-                NavigationLink(destination: Text("Tips & Tricks Placeholder")) {
+                NavigationLink(destination: TipsAndTricksView()) {
                     Label("Tips & Tricks", systemImage: "lightbulb.fill")
                 }
                 .listRowBackground(Color(.systemGray6))
                 
-                NavigationLink(destination: Text("Export Report Placeholder")) {
+                NavigationLink(destination: ExportView()) {
                     Label("Export Report", systemImage: "square.and.arrow.up.fill")
                 }
                 .listRowBackground(Color(.systemGray6))
                 
-                NavigationLink(destination: Text("Help & About Placeholder")) {
+                NavigationLink(destination: HelpAndAboutView()) {
                     Label("Help & About", systemImage: "questionmark.circle.fill")
                 }
                 .listRowBackground(Color(.systemGray6))

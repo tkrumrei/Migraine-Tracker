@@ -4,6 +4,7 @@ import UserNotifications
 @main
 struct MigraineTrackerApp: App {
     @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var themeManager = ThemeManager()
     
     init() {
         // Request notification permission when the app starts
@@ -20,6 +21,8 @@ struct MigraineTrackerApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(authViewModel)
+                .environmentObject(themeManager)
+                .preferredColorScheme(themeManager.currentTheme.colorScheme)
         }
     }
 }

@@ -70,4 +70,37 @@ class AuthViewModel: ObservableObject {
             UserDefaults.standard.set(encoded, forKey: "savedUser")
         }
     }
+    
+    func updateProfile(name: String, email: String) -> Bool {
+        guard var currentUser = self.currentUser else { return false }
+        
+        currentUser.name = name
+        currentUser.email = email
+        self.currentUser = currentUser
+        
+        if let encoded = try? JSONEncoder().encode(currentUser) {
+            UserDefaults.standard.set(encoded, forKey: "savedUser")
+            return true
+        }
+        return false
+    }
+    
+    func changePassword(currentPassword: String, newPassword: String) -> Bool {
+        guard var currentUser = self.currentUser else { return false }
+        
+        // Verify current password
+        if currentUser.password != currentPassword {
+            return false
+        }
+        
+        // Update to new password
+        currentUser.password = newPassword
+        self.currentUser = currentUser
+        
+        if let encoded = try? JSONEncoder().encode(currentUser) {
+            UserDefaults.standard.set(encoded, forKey: "savedUser")
+            return true
+        }
+        return false
+    }
 }

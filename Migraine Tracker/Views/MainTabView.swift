@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var selectedTab = 0
     @State private var showingActionSheet = false
     @State private var showingCheckIn = false
@@ -157,5 +158,6 @@ struct MainTabView_Previews: PreviewProvider {
     static var previews: some View {
         MainTabView()
             .environmentObject(AuthViewModel())
+            .environmentObject(ThemeManager())
     }
 }
