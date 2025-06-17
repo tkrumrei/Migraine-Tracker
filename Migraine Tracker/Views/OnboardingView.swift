@@ -16,6 +16,7 @@ struct OnboardingView: View {
     @State private var showInternalTriggerSheet = false
     @State private var showAddTypeField = false
     @State private var navigateToSetup = false
+    @State private var showValidationAlert = false
     @Binding var isPresented: Bool
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var authService: AuthService
@@ -150,6 +151,37 @@ struct OnboardingView: View {
         }
         .sorted { $0.name < $1.name }
     }
+    
+    // Validation computed properties
+    private var isStep1Valid: Bool {
+        migraineType != nil && migraineFrequency != nil
+    }
+    
+    private var isStep2Valid: Bool {
+        !selectedExternalTriggers.isEmpty || triggerStates.values.contains(true)
+    }
+    
+    private var isStep3Valid: Bool {
+        !selectedInternalTriggers.isEmpty || triggerStates.values.contains(true)
+    }
+    
+    private var isCurrentStepValid: Bool {
+        switch currentStep {
+        case 0: return isStep1Valid
+        case 1: return isStep2Valid
+        case 2: return isStep3Valid
+        default: return true
+        }
+    }
+    
+    private var validationMessage: String {
+        switch currentStep {
+        case 0: return "Please select both your migraine type and frequency before continuing."
+        case 1: return "Please identify at least one external trigger before continuing."
+        case 2: return "Please identify at least one internal trigger before continuing."
+        default: return "Please complete all required fields."
+        }
+    }
 
     // Icon abhängig vom Status (z.B. checkmark)
     private func iconName(for option: String) -> String {
@@ -246,22 +278,27 @@ struct OnboardingView: View {
                         Spacer()
 
                         Button(currentStep < 2 ? "Next" : "Get Started") {
-                            if currentStep < 2 {
-                                currentStep += 1
+                            if isCurrentStepValid {
+                                if currentStep < 2 {
+                                    currentStep += 1
+                                } else {
+                                    saveOnboardingData()
+                                    authViewModel.updateUserProfile(
+                                        migraineType: migraineType ?? "Unknown",
+                                        migraineFrequency: migraineFrequency ?? "Unknown"
+                                    )
+                                    navigateToSetup = true
+                                }
                             } else {
-                                saveOnboardingData()
-                                authViewModel.updateUserProfile(
-                                    migraineType: migraineType ?? "Unknown",
-                                    migraineFrequency: migraineFrequency ?? "Unknown"
-                                )
-                                navigateToSetup = true
+                                showValidationAlert = true
                             }
                         }
                         .foregroundColor(.white)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
-                        .background(Color.cyan)
+                        .background(isCurrentStepValid ? Color.cyan : Color.gray)
                         .cornerRadius(10)
+                        .disabled(!isCurrentStepValid)
                     }
                     .padding(.bottom, 70)
                     .padding(.horizontal, 10)
@@ -273,6 +310,11 @@ struct OnboardingView: View {
             }
             .fullScreenCover(isPresented: $showMainTabView) {
                 MainTabView()
+            }
+            .alert("Please Complete This Step", isPresented: $showValidationAlert) {
+                Button("OK") { }
+            } message: {
+                Text(validationMessage)
             }
         }
     }
