@@ -1,5 +1,17 @@
 import SwiftUI
 
+enum CheckInDetailType: Identifiable {
+    case sleep, body, environment
+
+    var id: String {
+        switch self {
+        case .sleep: return "sleep"
+        case .body: return "body"
+        case .environment: return "environment"
+        }
+    }
+}
+
 struct CheckInView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedDate = Date()
@@ -14,12 +26,17 @@ struct CheckInView: View {
     @State private var hasEnvironmentalFactors = false
     @State private var showingSaveAlert = false
     @State private var saveSuccess = false
-    @State private var isSymptomTrackingPresented = false
-    @State private var isEnvironmentTrackingPresented = false
+    
+    @State private var showSleepSheet = false
+    @State private var showBodySheet = false
+    @State private var showEnvironmentSheet = false
+
+    @State private var activePopup: CheckInDetailType?
     
     // Sample symptoms and environmental factors
     @Binding var selectedSymptoms: Set<String>
     @Binding var selectedFactors: Set<String>
+    @State private var didEnterSleep = false
     
     let symptoms = ["Headache", "Nausea", "Sensitivity to Light", "Sensitivity to Sound", "Aura"]
     let environmentalFactors = ["Stress", "Weather Changes", "Lack of Sleep", "Certain Foods", "Hormonal Changes"]
@@ -29,139 +46,180 @@ struct CheckInView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                // Date Section
-                Section {
-                    DateSelectionView(selectedDate: $selectedDate)
-                }
-                
-                // Mood Section with Emojis
-                Section(header: Text("How are you feeling?").font(.headline)) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Image(systemName: "face.smiling")
-                                .foregroundColor(.blue)
-                            Text("Mood")
-                            Spacer()
-                            Text(moodDescription)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack(spacing: 5) {
-                            ForEach(1...5, id: \.self) { index in
-                                Button(action: { mood = index }) {
-                                    Text(moodEmojis[index - 1])
-                                        .font(.title)
-                                        .opacity(index == mood ? 1.0 : 0.3)
-                                        .scaleEffect(index == mood ? 1.2 : 1.0)
-                                        .animation(.easeInOut(duration: 0.2), value: mood)
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                                .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .padding(.vertical, 5)
+            ScrollView {
+                VStack(spacing: 16) {
+                    
+                    // Date Section
+                    sectionCard {
+                        DateSelectionView(selectedDate: $selectedDate)
                     }
-                }
-                
-                // Sleep Section
-                Section(header: Text("Sleep").font(.headline)) {
-                    VStack(alignment: .leading, spacing: 15) {
+
+                    // Mood Section
+                    sectionCard {
                         VStack(alignment: .leading, spacing: 5) {
+                            HStack {
+                                Image(systemName: "face.smiling")
+                                    .foregroundColor(.blue)
+                                Text("Mood")
+                                Spacer()
+                                Text(moodDescription)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            HStack(spacing: 5) {
+                                ForEach(1...5, id: \.self) { index in
+                                    Button(action: { mood = index }) {
+                                        Text(moodEmojis[index - 1])
+                                            .font(.title)
+                                            .opacity(index == mood ? 1.0 : 0.3)
+                                            .scaleEffect(index == mood ? 1.2 : 1.0)
+                                            .animation(.easeInOut(duration: 0.2), value: mood)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .padding(.top, 5)
+                        }
+                    }
+
+                    // Sleep Section
+                    sectionCard {
+                        VStack(alignment: .leading) {
                             HStack {
                                 Image(systemName: "moon.zzz")
                                     .foregroundColor(.purple)
-                                Text("Sleep Quality: \(Int(sleepQuality))/10")
+
+                                Text(didEnterSleep ? "Sleep:" : "Add Sleep Info")
+                                    .foregroundColor(.gray)
+
+                                Spacer()
+
+                                Button(action: { activePopup = .sleep }) {
+                                    Image(systemName: didEnterSleep ? "pencil.circle" : "plus.circle")
+                                        .foregroundColor(.cyan)
+                                }
                             }
-                            Slider(value: $sleepQuality, in: 1...10, step: 1)
-                        }
-                        
-                        Divider()
-                        
-                        VStack(alignment: .leading, spacing: 5) {
-                            HStack {
-                                Image(systemName: "clock")
-                                    .foregroundColor(.purple)
-                                Text("Hours Slept: \(sleepHours, specifier: "%.1f") hours")
+
+                            if didEnterSleep {
+                                HStack {
+                                    Text("Quality: \(Int(sleepQuality))/10")
+                                    Spacer()
+                                    Text("Hours: \(sleepHours, specifier: "%.1f") h")
+                                    Spacer()
+                                }
+                                .foregroundColor(.gray)
+                                .padding(.top, 4)
                             }
-                            Slider(value: $sleepHours, in: 0...12, step: 0.5)
                         }
-                    }
-                    .padding(.vertical, 5)
-                }
-                
-                // Stress Section
-                Section(header: Text("Stress Level").font(.headline)) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Image(systemName: "brain.head.profile")
-                                .foregroundColor(.orange)
-                            Text("How stressed do you feel?")
-                            Spacer()
-                            Text("\(Int(stressLevel))/10")
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack(spacing: 5) {
-                            Slider(value: $stressLevel, in: 1...10, step: 1)
-                        }
-                        
-                        HStack {
-                            Text("Relaxed")
-                            Spacer()
-                            Text("Stressed")
-                        }
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 5)
-                }
-                
-                // Symptoms & Environment Section
-                Section(header: Text("Symptoms & Triggers").font(.headline)) {
-                    // Symptoms
-                    NavigationLink(destination: SymptomTrackingView(selectedSymptoms: $selectedSymptoms, isPresented: Binding(get: { isSymptomTrackingPresented }, set: { isSymptomTrackingPresented = $0 }))) {
-                        Text("Select Symptoms")
-                            .foregroundColor(selectedSymptoms.isEmpty ? .gray : .primary)
                     }
 
-                    // Environmental Factors
-                    NavigationLink(destination: EnvironmentTrackingView(selectedFactors: $selectedFactors, isPresented: Binding(get: { isEnvironmentTrackingPresented }, set: { isEnvironmentTrackingPresented = $0 }))) {
-                        Text("Select Environmental Factors")
-                            .foregroundColor(selectedFactors.isEmpty ? .gray : .primary)
-                    }
-                }
-                
-                // Notes Section
-                Section(header: Text("Notes").font(.headline)) {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Image(systemName: "note.text")
-                                .foregroundColor(.blue)
-                            Text("Additional Notes")
+                    // Stress Section
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Image(systemName: "brain.head.profile")
+                                    .foregroundColor(.orange)
+                                Text("How stressed do you feel?")
+                                Spacer()
+                                Text("\(Int(stressLevel))/10")
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Slider(value: $stressLevel, in: 1...10, step: 1)
+
+                            HStack {
+                                Text("Relaxed")
+                                Spacer()
+                                Text("Stressed")
+                            }
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                         }
-                        TextEditor(text: $notes)
-                            .frame(height: 100)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                            )
-                            .padding(.top, 5)
                     }
-                    .padding(.vertical, 5)
+
+                    // Symptoms & Environment Section
+                    sectionCard {
+                        VStack(spacing: 12) {
+                            // Body Symptoms
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Image(systemName: "person.fill")
+                                        .foregroundColor(.pink)
+
+                                    Text(selectedSymptoms.isEmpty ? "Add Body Symptoms" : "Symptoms:")
+                                        .foregroundColor(.gray)
+
+                                    Spacer()
+
+                                    Button(action: { activePopup = .body }) {
+                                        Image(systemName: !selectedSymptoms.isEmpty ? "pencil.circle" : "plus.circle")
+                                            .foregroundColor(.cyan)
+                                    }
+                                }
+
+                                if !selectedSymptoms.isEmpty {
+                                    Text(selectedSymptoms.joined(separator: ", "))
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                }
+                            }
+
+                            // Environment
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Image(systemName: "leaf.fill")
+                                        .foregroundColor(.green)
+
+                                    Text(selectedFactors.isEmpty ? "Add Environment Factors" : "Environment:")
+                                        .foregroundColor(.gray)
+
+                                    Spacer()
+
+                                    Button(action: { activePopup = .environment }) {
+                                        Image(systemName: !selectedFactors.isEmpty ? "pencil.circle" : "plus.circle")
+                                            .foregroundColor(.cyan)
+                                    }
+                                }
+
+                                if !selectedFactors.isEmpty {
+                                    Text(selectedFactors.joined(separator: ", "))
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                }
+                            }
+                        }
+                    }
+
+                    // Notes Section
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Image(systemName: "note.text")
+                                    .foregroundColor(.blue)
+                                Text("Additional Notes")
+                            }
+                            TextEditor(text: $notes)
+                                .frame(height: 100)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                )
+                        }
+                    }
                 }
+                .padding()
+                .background(Color(.systemGray6))
             }
             .navigationTitle("Daily Check-In")
-            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
-            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         saveCheckIn()
@@ -180,7 +238,27 @@ struct CheckInView: View {
                     }
                 )
             }
+            .sheet(item: $activePopup) { popupType in
+                CheckInDetailPopupView(
+                    sleepQuality: $sleepQuality,
+                    sleepHours: $sleepHours,
+                    selectedSymptoms: $selectedSymptoms,
+                    selectedFactors: $selectedFactors,
+                    didEnterSleep: $didEnterSleep,
+                    type: popupType
+                )
+            }
         }
+    }
+    
+    private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            content()
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
     
     private var moodDescription: String {
@@ -275,8 +353,175 @@ struct DateSelectionView: View {
                 .labelsHidden()
             Image(systemName: "calendar").foregroundColor(accentColor)
         }
-        .padding()
+        .padding(.vertical, 5)
         .background(Color(.secondarySystemGroupedBackground))
         .cornerRadius(10)
+    }
+}
+
+
+// MARK: - CheckInDetailPopupView
+
+struct CheckInDetailPopupView: View {
+    @Binding var sleepQuality: Double
+    @Binding var sleepHours: Double
+    @Binding var selectedSymptoms: Set<String>
+    @Binding var selectedFactors: Set<String>
+    @Binding var didEnterSleep: Bool // NEW
+    var type: CheckInDetailType
+
+    @Environment(\.dismiss) var dismiss
+
+    // Temporäre Werte zur Bearbeitung
+    @State private var tempSleepQuality: Double = 5
+    @State private var tempSleepHours: Double = 7
+    @State private var tempSymptoms: Set<String> = []
+    @State private var tempFactors: Set<String> = []
+    @State private var noneSelected = false
+
+    var body: some View {
+        NavigationView {
+            Form {
+                switch type {
+                case .sleep:
+                    sleepSection
+                case .body:
+                    symptomsSection
+                case .environment:
+                    environmentSection
+                }
+            }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        sleepQuality = tempSleepQuality
+                        sleepHours = tempSleepHours
+                        selectedSymptoms = tempSymptoms
+                        selectedFactors = tempFactors
+                        if type == .sleep {
+                            didEnterSleep = true
+                        }
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                tempSleepQuality = sleepQuality
+                tempSleepHours = sleepHours
+                tempSymptoms = selectedSymptoms
+                tempFactors = selectedFactors
+            }
+        }
+    }
+
+    private var sleepSection: some View {
+        Section(header: Text("How well did you sleep?")) {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading) {
+                    Text("Quality: \(Int(tempSleepQuality))/10")
+                    Slider(value: $tempSleepQuality, in: 1...10, step: 1)
+                }
+
+                VStack(alignment: .leading) {
+                    Text("Hours Slept")
+                    
+                    let hours = Array(stride(from: 0.0, through: 12.0, by: 0.5))
+                    
+                    Picker("Hours Slept", selection: $tempSleepHours) {
+                        ForEach(hours, id: \.self) { hour in
+                            Text(String(format: "%.1f h", hour)).tag(hour)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(height: 100)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    private var symptomsSection: some View {
+        let symptoms = ["Neck tension", "Pressure behind eyes", "Infection"]
+
+        return Group {
+            Section(header: Text("Body Symptoms")) {
+                ForEach(symptoms, id: \.self) { symptom in
+                    MultipleSelectionRowPopup(title: symptom, isSelected: tempSymptoms.contains(symptom)) {
+                        toggle(item: symptom, in: &tempSymptoms)
+                        noneSelected = false
+                    }
+                }
+
+                Toggle("No symptoms", isOn: $noneSelected)
+                    .onChange(of: noneSelected) { newValue in
+                        if newValue {
+                            tempSymptoms.removeAll()
+                        }
+                    }
+            }
+        }
+    }
+
+    private var environmentSection: some View {
+        let factors = ["At home", "On vacation", "Traveling", "Hospital/Doctor"]
+
+        return Group {
+            Section(header: Text("Environment")) {
+                ForEach(factors, id: \.self) { factor in
+                    MultipleSelectionRowPopup(title: factor, isSelected: tempFactors.contains(factor)) {
+                        toggle(item: factor, in: &tempFactors)
+                        noneSelected = false
+                    }
+                }
+
+                Toggle("None of the above", isOn: $noneSelected)
+                    .onChange(of: noneSelected) { newValue in
+                        if newValue {
+                            tempFactors.removeAll()
+                        }
+                    }
+            }
+        }
+    }
+
+    private func toggle<T: Hashable>(item: T, in set: inout Set<T>) {
+        if set.contains(item) {
+            set.remove(item)
+        } else {
+            set.insert(item)
+        }
+    }
+
+    private var title: String {
+        switch type {
+        case .sleep: return "Sleep Details"
+        case .body: return "Body Symptoms"
+        case .environment: return "Environment"
+        }
+    }
+}
+
+private struct MultipleSelectionRowPopup: View {
+    var title: String
+    var isSelected: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.blue)
+                }
+            }
+        }
     }
 }
