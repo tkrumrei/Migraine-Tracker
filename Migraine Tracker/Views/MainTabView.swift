@@ -139,17 +139,8 @@ struct MainTabView: View {
             CheckInView(selectedSymptoms: $selectedSymptoms, selectedFactors: $selectedFactors)
         }
         .fullScreenCover(isPresented: $showingNewEntry) {
-            NavigationView {
-                NewEntryView()
-                    .navigationTitle("New Entry")
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Done") {
-                                showingNewEntry = false
-                            }
-                        }
-                    }
-            }
+            NewEntryView()
+                .navigationTitle("New Entry")
         }
     }
 }

@@ -38,9 +38,6 @@ struct CheckInView: View {
     @Binding var selectedFactors: Set<String>
     @State private var didEnterSleep = false
     
-    let symptoms = ["Headache", "Nausea", "Sensitivity to Light", "Sensitivity to Sound", "Aura"]
-    let environmentalFactors = ["Stress", "Weather Changes", "Lack of Sleep", "Certain Foods", "Hormonal Changes"]
-    
     // Mood emojis in order: 😭🙁😐🙂😁
     let moodEmojis = ["😭", "🙁", "😐", "🙂", "😁"]
     
@@ -58,9 +55,7 @@ struct CheckInView: View {
                     sectionCard {
                         VStack(alignment: .leading, spacing: 5) {
                             HStack {
-                                Image(systemName: "face.smiling")
-                                    .foregroundColor(.blue)
-                                Text("Mood")
+                                Text("Mood").font(.headline)
                                 Spacer()
                                 Text(moodDescription)
                                     .foregroundColor(.secondary)
@@ -86,6 +81,7 @@ struct CheckInView: View {
                     // Sleep Section
                     sectionCard {
                         VStack(alignment: .leading) {
+                            Text("Sleep").font(.headline)
                             HStack {
                                 Image(systemName: "moon.zzz")
                                     .foregroundColor(.purple)
@@ -97,7 +93,7 @@ struct CheckInView: View {
 
                                 Button(action: { activePopup = .sleep }) {
                                     Image(systemName: didEnterSleep ? "pencil.circle" : "plus.circle")
-                                        .foregroundColor(.cyan)
+                                        .foregroundColor(.blue)
                                 }
                             }
 
@@ -117,6 +113,7 @@ struct CheckInView: View {
                     // Stress Section
                     sectionCard {
                         VStack(alignment: .leading, spacing: 6) {
+                            Text("Stress").font(.headline)
                             HStack {
                                 Image(systemName: "brain.head.profile")
                                     .foregroundColor(.orange)
@@ -140,7 +137,8 @@ struct CheckInView: View {
 
                     // Symptoms & Environment Section
                     sectionCard {
-                        VStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Symptoms & Environment").font(.headline)
                             // Body Symptoms
                             VStack(alignment: .leading) {
                                 HStack {
@@ -154,7 +152,7 @@ struct CheckInView: View {
 
                                     Button(action: { activePopup = .body }) {
                                         Image(systemName: !selectedSymptoms.isEmpty ? "pencil.circle" : "plus.circle")
-                                            .foregroundColor(.cyan)
+                                            .foregroundColor(.blue)
                                     }
                                 }
 
@@ -164,6 +162,8 @@ struct CheckInView: View {
                                         .truncationMode(.tail)
                                 }
                             }
+                            
+                            Divider()
 
                             // Environment
                             VStack(alignment: .leading) {
@@ -178,7 +178,7 @@ struct CheckInView: View {
 
                                     Button(action: { activePopup = .environment }) {
                                         Image(systemName: !selectedFactors.isEmpty ? "pencil.circle" : "plus.circle")
-                                            .foregroundColor(.cyan)
+                                            .foregroundColor(.blue)
                                     }
                                 }
 
@@ -195,16 +195,30 @@ struct CheckInView: View {
                     sectionCard {
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
+                                Text("Additional Notes").font(.headline)
                                 Image(systemName: "note.text")
-                                    .foregroundColor(.blue)
-                                Text("Additional Notes")
+                                    .foregroundColor(.cyan)
                             }
-                            TextEditor(text: $notes)
-                                .frame(height: 100)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                                )
+
+                            ZStack(alignment: .topLeading) {
+                                TextEditor(text: $notes)
+                                    .frame(height: 100)
+                                    .padding(4)
+
+                                if notes.isEmpty {
+                                    Text("Enter additional information...")
+                                        .foregroundColor(.gray)
+                                        .padding(.top, 12)
+                                        .padding(.leading, 9)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                            .background(Color(.systemBackground))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                            )
                         }
                     }
                 }
@@ -347,7 +361,7 @@ struct DateSelectionView: View {
 
     var body: some View {
         HStack {
-            Text("Date:").font(.headline)
+            Text("Date").font(.headline)
             Spacer()
             DatePicker("Select Date", selection: $selectedDate, in: ...Date(), displayedComponents: .date)
                 .labelsHidden()
@@ -447,7 +461,7 @@ struct CheckInDetailPopupView: View {
     }
 
     private var symptomsSection: some View {
-        let symptoms = ["Neck tension", "Pressure behind eyes", "Infection"]
+        let symptoms = ["Headache", "Nausea", "Sensitivity to Light", "Sensitivity to Sound", "Aura", "Neck Tension", "Pressure Behind Eyes", "Fatigue", "Blurred Vision", "Irritability"]
 
         return Group {
             Section(header: Text("Body Symptoms")) {
@@ -469,7 +483,7 @@ struct CheckInDetailPopupView: View {
     }
 
     private var environmentSection: some View {
-        let factors = ["At home", "On vacation", "Traveling", "Hospital/Doctor"]
+        let factors = ["Stress", "Weather Changes", "Lack of Sleep", "Certain Foods", "Hormonal Changes", "Vacation", "Work Trip ", "Dehydration", "Skipped Meals", "Screen Time", "Noise Exposure", "Poor Air Quality"]
 
         return Group {
             Section(header: Text("Environment")) {
