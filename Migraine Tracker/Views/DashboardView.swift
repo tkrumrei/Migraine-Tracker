@@ -233,7 +233,7 @@ struct DashboardView: View {
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, d MMMM yyyy"
+        formatter.dateFormat = "EEE, d MMMM yyyy"
         formatter.locale = Locale(identifier: "en_EN")
         return formatter
     }
