@@ -18,23 +18,40 @@ struct EditProfileView: View {
         NavigationView {
             List {
                 Section(header: Text("Personal Information")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Name")
-                            .font(.headline)
-                        TextField("Enter your name", text: $name)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Name")
+                                .font(.headline)
+                            TextField("Enter your name", text: $name)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1) // optionaler Rahmen
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Email")
+                                .font(.headline)
+                            TextField("Enter your email", text: $email)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .autocapitalization(.none)
+                                .keyboardType(.emailAddress)
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1) // optionaler Rahmen
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                        }
                     }
-                    .padding(.vertical, 4)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Email")
-                            .font(.headline)
-                        TextField("Enter your email", text: $email)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .autocapitalization(.none)
-                            .keyboardType(.emailAddress)
-                    }
-                    .padding(.vertical, 4)
+                    .padding(.horizontal)
+                    .padding(.vertical, 25)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 }
                 
                 Section(header: Text("Security")) {
@@ -50,10 +67,22 @@ struct EditProfileView: View {
                             Image(systemName: "chevron.right")
                                 .foregroundColor(.secondary)
                         }
+                        .padding() // Abstand innen
+                        .background(Color(.systemGray6)) // grauer Kasten
+                        .cornerRadius(10) // runde Ecken
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1) // optionaler Rahmen
+                        )
+                        .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1) // leichter Schatten
                     }
+                    .buttonStyle(PlainButtonStyle()) // damit es nicht wie ein blauer iOS-Button aussieht
                 }
             }
             .navigationTitle("Edit Profile")
+            .listStyle(.insetGrouped) // oder .plain
+            .background(Color.white) // ← füge das hier hinzu
+            .scrollContentBackground(.hidden)
             .onAppear {
                 loadCurrentUserData()
             }
@@ -113,47 +142,71 @@ struct EditProfileView: View {
 struct ChangePasswordView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var currentPassword: String = ""
     @State private var newPassword: String = ""
     @State private var confirmPassword: String = ""
     @State private var showAlert = false
     @State private var alertMessage = ""
-    
+
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("Change Password")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Current Password")
-                            .font(.headline)
-                        SecureField("Enter current password", text: $currentPassword)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Current Password")
+                                .font(.headline)
+                            SecureField("Enter current password", text: $currentPassword)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("New Password")
+                                .font(.headline)
+                            SecureField("Enter new password", text: $newPassword)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Confirm Password")
+                                .font(.headline)
+                            SecureField("Confirm new password", text: $confirmPassword)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                        }
                     }
-                    .padding(.vertical, 4)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("New Password")
-                            .font(.headline)
-                        SecureField("Enter new password", text: $newPassword)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    .padding(.vertical, 4)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Confirm Password")
-                            .font(.headline)
-                        SecureField("Confirm new password", text: $confirmPassword)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                    .padding(.vertical, 4)
+                    .padding(.horizontal)
+                    .padding(.vertical, 25)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 }
-                
+
                 Section(footer: Text("Password must be at least 6 characters long.")) {
                     EmptyView()
                 }
             }
             .navigationTitle("Change Password")
+            .listStyle(.insetGrouped)
+            .background(Color.white)
+            .scrollContentBackground(.hidden)
             .navigationBarItems(
                 leading: Button("Cancel") {
                     dismiss()
@@ -174,28 +227,28 @@ struct ChangePasswordView: View {
             }
         }
     }
-    
+
     private func changePassword() {
         guard !currentPassword.isEmpty, !newPassword.isEmpty, !confirmPassword.isEmpty else {
             alertMessage = "Please fill in all fields."
             showAlert = true
             return
         }
-        
+
         guard newPassword.count >= 6 else {
             alertMessage = "Password must be at least 6 characters long."
             showAlert = true
             return
         }
-        
+
         guard newPassword == confirmPassword else {
             alertMessage = "New passwords do not match."
             showAlert = true
             return
         }
-        
+
         let success = authViewModel.changePassword(currentPassword: currentPassword, newPassword: newPassword)
-        
+
         if success {
             alertMessage = "Password changed successfully!"
         } else {
