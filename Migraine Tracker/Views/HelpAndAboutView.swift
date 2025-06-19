@@ -3,135 +3,161 @@ import SwiftUI
 struct HelpAndAboutView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
-    
+
     private var appVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
     }
-    
+
     private var buildNumber: String {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
     }
-    
+
     private var appName: String {
-        Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? 
+        Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ??
         Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Migraine Tracker"
     }
-    
+
     var body: some View {
-        NavigationView {
-            List {
-                // App Info Section
-                Section {
-                    VStack(spacing: 8) {
-                        // App Icon and Name
-                        VStack(spacing: 4) {
-                            Image("Logo")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 80, height: 80)
-                                .cornerRadius(16)
-                                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                            
-                            Text(appName)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Text("Version \(appVersion)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Text("Your personal migraine tracking companion")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical)
+        ScrollView {
+            VStack(spacing: 32) {
+
+                // App Info
+                VStack(spacing: 12) {
+                    Image("Logo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 80, height: 80)
+                        .cornerRadius(16)
+                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+
+                    Text(appName)
+                        .font(.title2).bold()
+                    Text("Version \(appVersion)")
+                        .font(.subheadline).foregroundColor(.secondary)
+                    Text("Your personal migraine tracking companion")
+                        .font(.subheadline).foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
                 }
-                .listRowBackground(Color.clear)
-                
+                .frame(maxWidth: .infinity)
+                .padding()
+
                 // Help & Support Section
-                Section(header: Text("Help & Support")) {
-                    NavigationLink(destination: FAQView()) {
-                        Label("Frequently Asked Questions", systemImage: "questionmark.circle")
-                    }
-                    
-                    NavigationLink(destination: UserGuideView()) {
-                        Label("User Guide", systemImage: "book")
-                    }
-                    
-                    Button(action: {
-                        sendFeedbackEmail()
-                    }) {
-                        HStack {
-                            Label("Send Feedback", systemImage: "envelope")
-                            Spacer()
-                            Image(systemName: "arrow.up.right.square")
-                                .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Help & Support").font(.headline)
+                    VStack(spacing: 12) {
+                        NavigationLink(destination: FAQView()) {
+                            helpLink(label: "Frequently Asked Questions", icon: "questionmark.circle")
                         }
-                    }
-                    .foregroundColor(.primary)
-                }
-                
-                // Links Section
-                Section(header: Text("Links")) {
-                    Button(action: {
-                        openGitHub()
-                    }) {
-                        HStack {
-                            Label("View on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
-                            Spacer()
-                            Image(systemName: "arrow.up.right.square")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .foregroundColor(.primary)
-                }
-                
-                // Credits Section
-                Section(header: Text("Credits")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Developed with ❤️ for migraine sufferers")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
                         
-                        Text("Icons: SF Symbols by Apple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        NavigationLink(destination: UserGuideView()) {
+                            helpLink(label: "User Guide", icon: "book")
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                        
+                        Button(action: sendFeedbackEmail) {
+                            helpLink(label: "Send Feedback", icon: "envelope", showArrow: true)
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
                     }
-                    .padding(.vertical, 4)
                 }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                .padding(.horizontal)
+
+                // Links Section
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Links").font(.headline)
+                    Button(action: openGitHub) {
+                        helpLink(label: "View on GitHub", icon: "chevron.left.forwardslash.chevron.right", showArrow: true)
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    )
+                    .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                .padding(.horizontal)
+
+                // Credits
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Developed with ❤️ for migraine sufferers")
+                        .font(.subheadline).foregroundColor(.secondary)
+                    Text("Icons: SF Symbols by Apple")
+                        .font(.caption).foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+
+                Spacer()
             }
-            .navigationTitle("Help & About")
+            .padding(.top)
         }
+        .background(Color.white)
+        .scrollContentBackground(.hidden)
+        .navigationTitle("Help & About")
+        .padding(.bottom, 50)
     }
-    
+
+    private func helpLink(label: String, icon: String, showArrow: Bool = false) -> some View {
+        HStack {
+            Label(label, systemImage: icon)
+                .foregroundColor(.primary)
+            Spacer()
+            if showArrow {
+                Image(systemName: "arrow.up.right.square")
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(10)
+    }
+
     private func openGitHub() {
-        // Replace with your actual GitHub repository URL
         if let url = URL(string: "https://github.com/tlehman1/Migraine-Tracker") {
             openURL(url)
         }
     }
-    
+
     private func sendFeedbackEmail() {
         let subject = "\(appName) Feedback - v\(appVersion)"
         let body = """
-        
+
         
         ---
         App Version: \(appVersion)
         Device: \(UIDevice.current.model)
         iOS Version: \(UIDevice.current.systemVersion)
         """
-        
+
         let emailURL = "mailto:lehmanntim29@gmail.com?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
-        
+
         if let url = URL(string: emailURL) {
             openURL(url)
         }
     }
 }
+
 
 struct FAQView: View {
     let faqItems = [
@@ -155,60 +181,97 @@ struct FAQView: View {
     ]
     
     var body: some View {
-        List {
-            ForEach(faqItems) { item in
-                FAQItemView(item: item)
+        ScrollView {
+            VStack(spacing: 16) {
+                ForEach(faqItems) { item in
+                    FAQItemView(item: item)
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                }
             }
+            .padding()
         }
+        .background(Color.white)
+        .scrollContentBackground(.hidden)
         .navigationTitle("FAQ")
     }
 }
 
 struct UserGuideView: View {
     let guideSteps = [
-        GuideStep(title: "Getting Started", 
+        GuideStep(title: "Getting Started",
                   description: "Complete the onboarding to set up your migraine profile and identify potential triggers.",
                   icon: "play.circle"),
         
-        GuideStep(title: "Daily Check-ins", 
+        GuideStep(title: "Daily Check-ins",
                   description: "Use the '+' button to log new migraines or daily check-ins. Be consistent for best results.",
                   icon: "plus.circle"),
         
-        GuideStep(title: "Track Symptoms", 
+        GuideStep(title: "Track Symptoms",
                   description: "Record your symptoms, pain level, duration, and any triggers you notice.",
                   icon: "list.clipboard"),
         
-        GuideStep(title: "Review Insights", 
+        GuideStep(title: "Review Insights",
                   description: "Check the Insights tab regularly to identify patterns and trends in your migraine data.",
                   icon: "chart.bar"),
         
-        GuideStep(title: "Export Data", 
+        GuideStep(title: "Export Data",
                   description: "Share your migraine report with healthcare providers using the export feature.",
                   icon: "square.and.arrow.up")
     ]
     
     var body: some View {
-        List {
-            ForEach(guideSteps) { step in
-                HStack(alignment: .top, spacing: 16) {
-                    Image(systemName: step.icon)
-                        .font(.title2)
-                        .foregroundColor(.cyan)
-                        .frame(width: 30)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(step.title)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                        
-                        Text(step.description)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+        ScrollView {
+            VStack {
+                VStack(spacing: 16) {
+                    ForEach(guideSteps.indices, id: \.self) { index in
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(alignment: .top) {
+                                Image(systemName: guideSteps[index].icon)
+                                    .font(.title2)
+                                    .foregroundColor(.cyan)
+                                    .frame(width: 30)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(guideSteps[index].title)
+                                        .font(.headline)
+                                        .fontWeight(.semibold)
+
+                                    Text(guideSteps[index].description)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer(minLength: 0)
+                            }
+
+                            // Divider nur, wenn NICHT letztes Element
+                            if index < guideSteps.count - 1 {
+                                Divider()
+                            }
+                        }
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(12)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                .padding(.horizontal) // Abstand links/rechts vom Rand
             }
+            .padding(.top)
         }
+        .background(Color.white)
+        .scrollContentBackground(.hidden)
         .navigationTitle("User Guide")
     }
 }
