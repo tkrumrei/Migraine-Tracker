@@ -1,5 +1,33 @@
 import SwiftUI
 
+enum CalendarEventType {
+    case checkIn
+    case migraine
+}
+
+struct CalendarEvent {
+    let type: CalendarEventType
+    let startHour: Int
+    let endHour: Int
+}
+
+let mockEvents: [Date: [CalendarEvent]] = {
+    var dict = [Date: [CalendarEvent]]()
+    let calendar = Calendar.current
+    
+    // 10. Juni – Check-in + Migraine 6–8
+    if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 10)) {
+        dict[date] = [
+            CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
+            CalendarEvent(type: .migraine, startHour: 6, endHour: 8)
+        ]
+    }
+    return dict
+}()
+
+
+
+
 struct CalendarView: View {
     @State private var selectedDate = Date()
     @State private var calendarScope: CalendarScope = .month
@@ -43,7 +71,7 @@ struct MonthCalendarView: View {
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 12) {
                 ForEach(days, id: \.self) { date in
-                    let type = entryType(for: date)
+                    let types = entryTypes(for: date)
                     let isToday = calendar.isDateInToday(date)
 
                     VStack {
@@ -67,17 +95,17 @@ struct MonthCalendarView: View {
 
                         Spacer()
 
-                        if type == .migraine {
+                        if types.contains(.migraine) {
                             Image(systemName: "exclamationmark.circle")
                                 .foregroundColor(.red)
                         } else {
-                            Spacer().frame(height: 20) // damit Layout stabil bleibt
+                            Spacer().frame(height: 20)
                         }
 
                         Spacer()
                     }
                     .frame(width: 44, height: 50)
-                    .background(type == .checkIn ? Color.green.opacity(0.15) : Color(.systemGray6))
+                    .background(types.contains(.checkIn) ? Color.green.opacity(0.15) : Color(.systemGray6))
                     .cornerRadius(10)
                     .shadow(radius: 1)
                     .onTapGesture {
@@ -97,15 +125,10 @@ struct MonthCalendarView: View {
         case none
     }
 
-    private func entryType(for date: Date) -> EntryType {
-        let day = calendar.component(.day, from: date)
-        if day % 10 == 0 {
-            return .checkIn
-        } else if day % 5 == 0 {
-            return .migraine
-        } else {
-            return .none
-        }
+    private func entryTypes(for date: Date) -> Set<CalendarEventType> {
+        let cleanDate = calendar.startOfDay(for: date)
+        let events = mockEvents[cleanDate] ?? []
+        return Set(events.map { $0.type })
     }
 }
 
@@ -165,30 +188,53 @@ struct DayCalendarView: View {
     private let calendar = Calendar.current
 
     var body: some View {
+        let cleanDate = calendar.startOfDay(for: selectedDate)
+        let events = mockEvents[cleanDate] ?? []
+        let migraine = events.first(where: { $0.type == .migraine })
+        let hasCheckIn = events.contains(where: { $0.type == .checkIn })
+
         VStack {
             DayNavigation(selectedDate: $selectedDate)
 
             ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(0..<24, id: \.self) { hour in
-                        HStack {
-                            Text("\(hour):00")
-                                .font(.caption)
-                                .frame(width: 50, alignment: .trailing)
-
-                            Divider()
-
-                            if hasEntry(on: selectedDate, hour: hour) {
-                                entryDetail(for: hour)
+                ZStack(alignment: .topLeading) {
+                    VStack(spacing: 0) {
+                        ForEach(0..<24, id: \.self) { hour in
+                            HStack {
+                                Text("\(hour):00")
+                                    .font(.caption)
+                                    .frame(width: 50, alignment: .trailing)
+                                Divider()
+                                Spacer()
                             }
-
-                            Spacer()
+                            .frame(height: 50)
+                            .padding(.horizontal)
                         }
-                        .frame(height: 50)
-                        .padding(.horizontal)
+                    }
+
+                    if let migraine = migraine {
+                        Rectangle()
+                            .fill(Color.red.opacity(0.2))
+                            .frame(height: CGFloat(migraine.endHour - migraine.startHour) * 50)
+                            .overlay(
+                                HStack {
+                                    Circle()
+                                        .fill(Color.red)
+                                        .frame(width: 10, height: 10)
+                                    Text("Migraine")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                }
+                                .padding(.leading, 60)
+                                .padding(.top, 4),
+                                alignment: .top
+                            )
+                            .offset(y: CGFloat(migraine.startHour) * 50)
                     }
                 }
             }
+            .background(hasCheckIn ? Color.green.opacity(0.05) : Color.clear)
         }
     }
 
