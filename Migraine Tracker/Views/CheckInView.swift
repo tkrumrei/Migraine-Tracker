@@ -91,9 +91,8 @@ struct CheckInView: View {
 
                                 Spacer()
 
-                                Button(action: { activePopup = .sleep }) {
-                                    Image(systemName: didEnterSleep ? "pencil.circle" : "plus.circle")
-                                        .foregroundColor(.blue)
+                                DetailActionButton(isEditMode: didEnterSleep) {
+                                    activePopup = .sleep
                                 }
                             }
 
@@ -150,9 +149,8 @@ struct CheckInView: View {
 
                                     Spacer()
 
-                                    Button(action: { activePopup = .body }) {
-                                        Image(systemName: !selectedSymptoms.isEmpty ? "pencil.circle" : "plus.circle")
-                                            .foregroundColor(.blue)
+                                    DetailActionButton(isEditMode: !selectedSymptoms.isEmpty) {
+                                        activePopup = .body
                                     }
                                 }
 
@@ -176,9 +174,8 @@ struct CheckInView: View {
 
                                     Spacer()
 
-                                    Button(action: { activePopup = .environment }) {
-                                        Image(systemName: !selectedFactors.isEmpty ? "pencil.circle" : "plus.circle")
-                                            .foregroundColor(.blue)
+                                    DetailActionButton(isEditMode: !selectedFactors.isEmpty) {
+                                        activePopup = .environment
                                     }
                                 }
 
@@ -365,6 +362,12 @@ struct DateSelectionView: View {
             Spacer()
             DatePicker("Select Date", selection: $selectedDate, in: ...Date(), displayedComponents: .date)
                 .labelsHidden()
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
             Image(systemName: "calendar").foregroundColor(accentColor)
         }
         .padding(.vertical, 5)
@@ -373,6 +376,29 @@ struct DateSelectionView: View {
     }
 }
 
+struct DetailActionButton: View {
+    var isEditMode: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isEditMode ? "pencil.circle.fill" : "plus.circle.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
+                .foregroundColor(.blue)
+                .padding(10)
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
 
 // MARK: - CheckInDetailPopupView
 
