@@ -5,9 +5,13 @@ struct NewEntryView: View {
 
     @State private var showDatePickerSheet = false
     @State private var selectedDate = Date()
-    @State private var selectedHour = Calendar.current.component(.hour, from: Date())
-    @State private var selectedMinute = Calendar.current.component(.minute, from: Date())
-    @State private var showTimeSheet = false
+    @State private var fromHour = Calendar.current.component(.hour, from: Date().addingTimeInterval(-60))
+    @State private var fromMinute = Calendar.current.component(.minute, from: Date().addingTimeInterval(-60))
+    @State private var toHour = Calendar.current.component(.hour, from: Date())
+    @State private var toMinute = Calendar.current.component(.minute, from: Date())
+
+    @State private var showFromSheet = false
+    @State private var showToSheet = false
     @State private var selectedSymptoms: Set<String> = []
     @State private var customSymptoms: [String] = []
     @State private var customSymptom = ""
@@ -68,7 +72,7 @@ struct NewEntryView: View {
                             .foregroundColor(.primary)
                             .padding(.horizontal)
                             .padding(.vertical, 6)
-                            .background(Color(.systemGray5))
+                            .background(Color(.systemGray6))
                             .cornerRadius(10)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
@@ -83,22 +87,45 @@ struct NewEntryView: View {
                 Divider()
                 
                 // Time Row
-                HStack {
-                    Text("Time").font(.headline)
+                HStack(alignment: .center) {
+                    Text("Period").font(.headline)
+
                     Spacer()
-                    Button(action: { showTimeSheet = true }) {
-                        Text("\(String(format: "%02d", selectedHour)) : \(String(format: "%02d", selectedMinute))")
-                            .foregroundColor(.primary)
-                            .padding(.horizontal)
-                            .padding(.vertical, 6)
-                            .background(Color(.systemGray5))
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
-                            .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+
+                    HStack(spacing: 6) {
+                        // From Time Button
+                        Button(action: { showFromSheet = true }) {
+                            Text("\(String(format: "%02d", fromHour)) : \(String(format: "%02d", fromMinute))")
+                                .foregroundColor(.primary)
+                                .padding(.horizontal)
+                                .padding(.vertical, 6)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                        }
+
+                        Text("-")
+
+                        // To Time Button
+                        Button(action: { showToSheet = true }) {
+                            Text("\(String(format: "%02d", toHour)) : \(String(format: "%02d", toMinute))")
+                                .foregroundColor(.primary)
+                                .padding(.horizontal)
+                                .padding(.vertical, 6)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
+                        }
                     }
+
                     Image(systemName: "clock")
                         .foregroundColor(accentColor)
                 }
@@ -116,36 +143,76 @@ struct NewEntryView: View {
             }
             .presentationDetents([.medium])
         }
-        .sheet(isPresented: $showTimeSheet) {
+        // FROM TIME SHEET
+        .sheet(isPresented: $showFromSheet) {
             NavigationView {
-                Form {
-                    Section(header: Text("Select Time")) {
-                        HStack {
-                            Text("Hour")
-                            Spacer()
-                            Picker("Hour", selection: $selectedHour) {
-                                ForEach(0..<24) { hour in
-                                    Text("\(hour) h").tag(hour)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                        }
+                VStack(spacing: 20) {
+                    Text("Start Time")
+                        .font(.title2).bold()
 
-                        HStack {
-                            Text("Minute")
-                            Spacer()
-                            Picker("Minute", selection: $selectedMinute) {
-                                ForEach(0..<60) { min in
-                                    Text("\(min) min").tag(min)
-                                }
-                            }
-                            .pickerStyle(.menu)
+                    HStack(spacing: 12) {
+                        Picker("Hour", selection: $fromHour) {
+                            ForEach(0..<24, id: \.self) { Text(String(format: "%02d", $0)) }
                         }
+                        .pickerStyle(.wheel)
+                        .frame(width: 100)
+                        .clipped()
+
+                        Text(":")
+                            .font(.title)
+
+                        Picker("Minute", selection: $fromMinute) {
+                            ForEach(0..<60, id: \.self) { Text(String(format: "%02d", $0)) }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(width: 100)
+                        .clipped()
                     }
+                    .frame(height: 150)
+
+                    Spacer()
                 }
-                .navigationTitle("Select Time")
+                .padding()
+                .navigationTitle("From")
                 .navigationBarItems(trailing: Button("Done") {
-                    showTimeSheet = false
+                    showFromSheet = false
+                })
+            }
+        }
+
+        // TO TIME SHEET
+        .sheet(isPresented: $showToSheet) {
+            NavigationView {
+                VStack(spacing: 20) {
+                    Text("End Time")
+                        .font(.title2).bold()
+
+                    HStack(spacing: 12) {
+                        Picker("Hour", selection: $toHour) {
+                            ForEach(0..<24, id: \.self) { Text(String(format: "%02d", $0)) }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(width: 100)
+                        .clipped()
+
+                        Text(":")
+                            .font(.title)
+
+                        Picker("Minute", selection: $toMinute) {
+                            ForEach(0..<60, id: \.self) { Text(String(format: "%02d", $0)) }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(width: 100)
+                        .clipped()
+                    }
+                    .frame(height: 150)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Until")
+                .navigationBarItems(trailing: Button("Done") {
+                    showToSheet = false
                 })
             }
         }
