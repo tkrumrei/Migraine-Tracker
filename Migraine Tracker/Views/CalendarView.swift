@@ -43,23 +43,41 @@ struct MonthCalendarView: View {
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 12) {
                 ForEach(days, id: \.self) { date in
+                    let type = entryType(for: date)
+                    let isToday = calendar.isDateInToday(date)
+
                     VStack {
                         HStack {
-                            Text("\(calendar.component(.day, from: date))")
-                                .font(.caption)
-                                .padding(.leading, 4)
+                            ZStack {
+                                if isToday {
+                                    Circle()
+                                        .fill(Color.cyan.opacity(0.2))
+                                        .frame(width: 24, height: 24)
+                                }
+
+                                Text("\(calendar.component(.day, from: date))")
+                                    .font(.caption)
+                                    .foregroundColor(.primary)
+                            }
                             Spacer()
                         }
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                        .padding(.top, 6)
+                        .padding(.leading, 6)
+
                         Spacer()
 
-                        if hasEntry(on: date) {
-                            entryIcon(for: date)
+                        if type == .migraine {
+                            Image(systemName: "exclamationmark.circle")
+                                .foregroundColor(.red)
+                        } else {
+                            Spacer().frame(height: 20) // damit Layout stabil bleibt
                         }
 
                         Spacer()
                     }
-                    .frame(height: 50)
-                    .background(Color(.systemGray6))
+                    .frame(width: 44, height: 50)
+                    .background(type == .checkIn ? Color.green.opacity(0.15) : Color(.systemGray6))
                     .cornerRadius(10)
                     .shadow(radius: 1)
                     .onTapGesture {
@@ -73,13 +91,21 @@ struct MonthCalendarView: View {
         }
     }
 
-    private func hasEntry(on date: Date) -> Bool {
-        calendar.component(.day, from: date) % 5 == 0
+    enum EntryType {
+        case checkIn
+        case migraine
+        case none
     }
 
-    private func entryIcon(for date: Date) -> some View {
-        Image(systemName: calendar.component(.day, from: date) % 10 == 0 ? "checkmark.circle" : "exclamationmark.circle")
-            .foregroundColor(calendar.component(.day, from: date) % 10 == 0 ? .green : .red)
+    private func entryType(for date: Date) -> EntryType {
+        let day = calendar.component(.day, from: date)
+        if day % 10 == 0 {
+            return .checkIn
+        } else if day % 5 == 0 {
+            return .migraine
+        } else {
+            return .none
+        }
     }
 }
 
