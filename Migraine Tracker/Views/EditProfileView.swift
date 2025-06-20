@@ -10,6 +10,10 @@ struct EditProfileView: View {
     @State private var newPassword: String = ""
     @State private var confirmPassword: String = ""
     
+    @State private var originalName: String = ""
+    @State private var originalEmail: String = ""
+    @State private var isEditing: Bool = false
+    
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var showingChangePassword = false
@@ -22,7 +26,9 @@ struct EditProfileView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Name")
                                 .font(.headline)
-                            TextField("Enter your name", text: $name)
+                            TextField("Enter your name", text: $name, onEditingChanged: { editing in
+                                isEditing = editing
+                            })
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .cornerRadius(10)
                                 .overlay(
@@ -34,9 +40,11 @@ struct EditProfileView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Email")
+                            Text("E-Mail")
                                 .font(.headline)
-                            TextField("Enter your email", text: $email)
+                            TextField("Enter your E-Mail", text: $email, onEditingChanged: { editing in
+                                isEditing = editing
+                            })
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .autocapitalization(.none)
                                 .keyboardType(.emailAddress)
@@ -83,6 +91,19 @@ struct EditProfileView: View {
             .listStyle(.insetGrouped) // oder .plain
             .background(Color.white) // ← füge das hier hinzu
             .scrollContentBackground(.hidden)
+            .navigationBarItems(
+                leading: isEditing ? AnyView(Button("Cancel") {
+                    // Reset values and exit editing mode
+                    name = originalName
+                    email = originalEmail
+                    isEditing = false
+                    hideKeyboard()
+                }) : AnyView(EmptyView()),
+                trailing: isEditing ? AnyView(Button("Save") {
+                    saveProfile()
+                }
+                .disabled(name.isEmpty || email.isEmpty || (name == originalName && email == originalEmail))) : AnyView(EmptyView())
+            )
             .onAppear {
                 loadCurrentUserData()
             }
@@ -106,6 +127,8 @@ struct EditProfileView: View {
         if let user = authViewModel.currentUser {
             name = user.name
             email = user.email
+            originalName = user.name
+            originalEmail = user.email
         }
     }
     
@@ -126,10 +149,18 @@ struct EditProfileView: View {
         
         if success {
             alertMessage = "Profile updated successfully!"
+            originalName = name
+            originalEmail = email
+            isEditing = false
+            hideKeyboard()
         } else {
             alertMessage = "Failed to update profile. Please try again."
         }
         showAlert = true
+    }
+    
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
     private func isValidEmail(_ email: String) -> Bool {
