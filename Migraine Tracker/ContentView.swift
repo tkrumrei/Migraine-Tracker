@@ -15,7 +15,15 @@ struct ContentView: View {
     var body: some View {
         Group {
             if authViewModel.isLoggedIn {
-                MainTabView()
+                if authViewModel.shouldShowOnboarding {
+                    OnboardingView(isPresented: .constant(true))
+                        .environmentObject(authViewModel)
+                        .onReceive(NotificationCenter.default.publisher(for: .init("OnboardingCompleted"))) { _ in
+                            authViewModel.completeOnboarding()
+                        }
+                } else {
+                    MainTabView()
+                }
             } else {
                 LoginView()
             }

@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @State private var showProfileSetup = false
-    @State private var showMainTabView = false
     @State private var currentStep = 0
     @State private var migraineType: String? = nil
     @State private var migraineFrequency: String? = nil
@@ -15,7 +13,6 @@ struct OnboardingView: View {
     @State private var showExternalTriggerSheet = false
     @State private var showInternalTriggerSheet = false
     @State private var showAddTypeField = false
-    @State private var navigateToSetup = false
     @State private var showValidationAlert = false
     @Binding var isPresented: Bool
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -283,7 +280,7 @@ default: return "Please complete all required fields."
                                         migraineType: migraineType ?? "Unknown",
                                         migraineFrequency: migraineFrequency ?? "Unknown"
                                     )
-                                    navigateToSetup = true
+                                    authViewModel.completeOnboarding()
                                 }
                             } else {
                                 showValidationAlert = true
@@ -298,13 +295,6 @@ default: return "Please complete all required fields."
                     .padding(.bottom, 70)
                     .padding(.horizontal, 10)
                 }
-            }
-            .navigationDestination(isPresented: $navigateToSetup) {
-                ProfileSetupView(showMainTabView: $showMainTabView)
-                    .navigationBarBackButtonHidden(true)
-            }
-            .fullScreenCover(isPresented: $showMainTabView) {
-                MainTabView()
             }
             .alert("Please Complete This Step", isPresented: $showValidationAlert) {
                 Button("OK") { }
