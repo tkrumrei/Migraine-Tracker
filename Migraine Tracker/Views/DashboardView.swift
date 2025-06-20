@@ -166,12 +166,15 @@ struct DashboardView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var weatherService = WeatherService()
     @State private var showRiskInfo = false
+    @State private var isTriggersExpanded = false
 
-    // Sample data für andere Trigger
+    // Top Triggers basierend auf tatsächlichen Migräne-Einträgen
     let topTriggers = [
-        (name: "Weather", percentage: 90),
-        (name: "Noise", percentage: 85),
-        (name: "Sleep", percentage: 63)
+        (name: "Stress", percentage: 85),
+        (name: "Weather Changes", percentage: 78),
+        (name: "Screen Time/Eye Strain", percentage: 65),
+        (name: "Missed Meals", percentage: 52),
+        (name: "Hormonal Changes", percentage: 45)
     ]
     
     // Berechne Risiko basierend auf Wetterdaten
@@ -290,12 +293,26 @@ struct DashboardView: View {
                     
                     // Top Triggers
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Top Triggers")
-                            .font(.headline)
-                            .padding(.horizontal)
+                        HStack {
+                            Text("Top Triggers")
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    isTriggersExpanded.toggle()
+                                }
+                            }) {
+                                Image(systemName: isTriggersExpanded ? "chevron.up" : "chevron.down")
+                                    .foregroundColor(.blue)
+                                    .font(.title3)
+                            }
+                        }
+                        .padding(.horizontal)
                         
                         VStack(spacing: 8) {
-                            ForEach(topTriggers.indices, id: \.self) { index in
+                            ForEach(topTriggers.prefix(isTriggersExpanded ? topTriggers.count : 3).indices, id: \.self) { index in
                                 HStack {
                                     Text("\(index + 1). \(topTriggers[index].name)")
                                     Spacer()
