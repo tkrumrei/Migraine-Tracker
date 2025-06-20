@@ -11,24 +11,69 @@ struct CalendarEvent {
     let endHour: Int
 }
 
-let mockEvents: [Date: [CalendarEvent]] = {
+func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
+    // Only show test data for test user
+    guard let user = currentUser,
+          user.email == "test@30five.com" else {
+        return [:]
+    }
+    
     var dict = [Date: [CalendarEvent]]()
     let calendar = Calendar.current
     
-    // 10. Juni – Check-in + Migraine 6–8
+    // Juni 3 – Migraine 14–17
+    if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 3)) {
+        dict[date] = [
+            CalendarEvent(type: .migraine, startHour: 14, endHour: 17)
+        ]
+    }
+    
+    // Juni 7 – Check-in + Migraine 9–12
+    if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 7)) {
+        dict[date] = [
+            CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
+            CalendarEvent(type: .migraine, startHour: 9, endHour: 12)
+        ]
+    }
+    
+    // Juni 10 – Check-in + Migraine 6–8 (existing)
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 10)) {
         dict[date] = [
             CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
             CalendarEvent(type: .migraine, startHour: 6, endHour: 8)
         ]
     }
+    
+    // Juni 15 – Migraine 20–23
+    if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 15)) {
+        dict[date] = [
+            CalendarEvent(type: .migraine, startHour: 20, endHour: 23)
+        ]
+    }
+    
+    // Juni 19 – Check-in + Migraine 11–15
+    if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 19)) {
+        dict[date] = [
+            CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
+            CalendarEvent(type: .migraine, startHour: 11, endHour: 15)
+        ]
+    }
+    
+    // Juni 23 – Migraine 16–19
+    if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 23)) {
+        dict[date] = [
+            CalendarEvent(type: .migraine, startHour: 16, endHour: 19)
+        ]
+    }
+    
     return dict
-}()
+}
 
 
 
 
 struct CalendarView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var selectedDate = Date()
     @State private var calendarScope: CalendarScope = .month
     
@@ -43,9 +88,9 @@ struct CalendarView: View {
 
             switch calendarScope {
             case .month:
-                MonthCalendarView(selectedDate: $selectedDate, calendarScope: $calendarScope)
+                MonthCalendarView(selectedDate: $selectedDate, calendarScope: $calendarScope, currentUser: authViewModel.currentUser)
             case .day:
-                DayCalendarView(selectedDate: $selectedDate)
+                DayCalendarView(selectedDate: $selectedDate, currentUser: authViewModel.currentUser)
             }
         }
         .padding(.bottom, 60)
@@ -60,6 +105,7 @@ enum CalendarScope {
 struct MonthCalendarView: View {
     @Binding var selectedDate: Date
     @Binding var calendarScope: CalendarScope
+    let currentUser: AppUser?
 
     private let calendar = Calendar.current
 
@@ -127,7 +173,7 @@ struct MonthCalendarView: View {
 
     private func entryTypes(for date: Date) -> Set<CalendarEventType> {
         let cleanDate = calendar.startOfDay(for: date)
-        let events = mockEvents[cleanDate] ?? []
+        let events = getTestUserEvents(currentUser: currentUser)[cleanDate] ?? []
         return Set(events.map { $0.type })
     }
 }
@@ -185,11 +231,12 @@ extension Calendar {
 
 struct DayCalendarView: View {
     @Binding var selectedDate: Date
+    let currentUser: AppUser?
     private let calendar = Calendar.current
 
     var body: some View {
         let cleanDate = calendar.startOfDay(for: selectedDate)
-        let events = mockEvents[cleanDate] ?? []
+        let events = getTestUserEvents(currentUser: currentUser)[cleanDate] ?? []
         let migraine = events.first(where: { $0.type == .migraine })
         let hasCheckIn = events.contains(where: { $0.type == .checkIn })
 

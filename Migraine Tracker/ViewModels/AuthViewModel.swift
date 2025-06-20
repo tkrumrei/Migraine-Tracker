@@ -13,6 +13,7 @@ struct AppUser: Codable {
 class AuthViewModel: ObservableObject {
     @Published var isLoggedIn: Bool = false
     @Published var currentUser: AppUser?
+    @Published var shouldShowOnboarding: Bool = false
     
     init() {
         // Check if user is already logged in
@@ -20,6 +21,9 @@ class AuthViewModel: ObservableObject {
            let user = try? JSONDecoder().decode(AppUser.self, from: savedUser) {
             self.currentUser = user
             self.isLoggedIn = true
+            // Check if user needs to complete onboarding
+            let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+            self.shouldShowOnboarding = !hasCompletedOnboarding
         }
     }
     
@@ -30,6 +34,10 @@ class AuthViewModel: ObservableObject {
             let user = AppUser(name: "Test User", email: email, password: password, migraineType: "", migraineFrequency: "0")
             self.currentUser = user
             self.isLoggedIn = true
+            
+            // Test user has already completed onboarding
+            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+            self.shouldShowOnboarding = false
             
             if rememberMe {
                 if let encoded = try? JSONEncoder().encode(user) {
@@ -53,6 +61,10 @@ class AuthViewModel: ObservableObject {
         let user = AppUser(name: name, email: email, password: password, migraineType: "", migraineFrequency: "0")
         self.currentUser = user
         self.isLoggedIn = true
+        self.shouldShowOnboarding = true // New users need onboarding
+        
+        // Reset onboarding completion for new users
+        UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
         
         if let encoded = try? JSONEncoder().encode(user) {
             UserDefaults.standard.set(encoded, forKey: "savedUser")
@@ -69,6 +81,11 @@ class AuthViewModel: ObservableObject {
         if let encoded = try? JSONEncoder().encode(currentUser) {
             UserDefaults.standard.set(encoded, forKey: "savedUser")
         }
+    }
+    
+    func completeOnboarding() {
+        self.shouldShowOnboarding = false
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
     }
     
     func updateProfile(name: String, email: String) -> Bool {
