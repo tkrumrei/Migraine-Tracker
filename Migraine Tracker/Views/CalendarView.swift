@@ -9,6 +9,20 @@ struct CalendarEvent {
     let type: CalendarEventType
     let startHour: Int
     let endHour: Int
+    let symptoms: [String]?
+    let painScale: Int?
+    let location: String?
+    let notes: String?
+    
+    init(type: CalendarEventType, startHour: Int, endHour: Int, symptoms: [String]? = nil, painScale: Int? = nil, location: String? = nil, notes: String? = nil) {
+        self.type = type
+        self.startHour = startHour
+        self.endHour = endHour
+        self.symptoms = symptoms
+        self.painScale = painScale
+        self.location = location
+        self.notes = notes
+    }
 }
 
 func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
@@ -24,7 +38,11 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
     // Juni 3 – Migraine 14–17
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 3)) {
         dict[date] = [
-            CalendarEvent(type: .migraine, startHour: 14, endHour: 17)
+            CalendarEvent(type: .migraine, startHour: 14, endHour: 17, 
+                         symptoms: ["Headache", "Nausea", "Light sensitivity"], 
+                         painScale: 7, 
+                         location: "Office", 
+                         notes: "Started after lunch, stress from work meeting")
         ]
     }
     
@@ -32,7 +50,11 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 7)) {
         dict[date] = [
             CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
-            CalendarEvent(type: .migraine, startHour: 9, endHour: 12)
+            CalendarEvent(type: .migraine, startHour: 9, endHour: 12, 
+                         symptoms: ["Headache", "Dizziness", "Sound sensitivity"], 
+                         painScale: 6, 
+                         location: "Home", 
+                         notes: "Weather change, low barometric pressure")
         ]
     }
     
@@ -40,14 +62,22 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 10)) {
         dict[date] = [
             CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
-            CalendarEvent(type: .migraine, startHour: 6, endHour: 8)
+            CalendarEvent(type: .migraine, startHour: 6, endHour: 8, 
+                         symptoms: ["Headache", "Nausea", "Fatigue"], 
+                         painScale: 9, 
+                         location: "Home", 
+                         notes: "Woke up with migraine, possible hormonal trigger")
         ]
     }
     
     // Juni 15 – Migraine 20–23
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 15)) {
         dict[date] = [
-            CalendarEvent(type: .migraine, startHour: 20, endHour: 23)
+            CalendarEvent(type: .migraine, startHour: 20, endHour: 23, 
+                         symptoms: ["Headache", "Light sensitivity", "Neck pain"], 
+                         painScale: 6, 
+                         location: "Office", 
+                         notes: "Long day at computer, eye strain trigger")
         ]
     }
     
@@ -55,14 +85,22 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 19)) {
         dict[date] = [
             CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
-            CalendarEvent(type: .migraine, startHour: 11, endHour: 15)
+            CalendarEvent(type: .migraine, startHour: 11, endHour: 15, 
+                         symptoms: ["Headache", "Nausea", "Vomiting", "Dizziness"], 
+                         painScale: 9, 
+                         location: "Shopping Mall", 
+                         notes: "Severe attack, missed meals yesterday")
         ]
     }
     
     // Juni 23 – Migraine 16–19
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 23)) {
         dict[date] = [
-            CalendarEvent(type: .migraine, startHour: 16, endHour: 19)
+            CalendarEvent(type: .migraine, startHour: 16, endHour: 19, 
+                         symptoms: ["Headache", "Sound sensitivity", "Fatigue"], 
+                         painScale: 5, 
+                         location: "Gym", 
+                         notes: "Mild migraine, managed with rest and hydration")
         ]
     }
     
@@ -264,18 +302,42 @@ struct DayCalendarView: View {
                             .fill(Color.red.opacity(0.2))
                             .frame(height: CGFloat(migraine.endHour - migraine.startHour) * 50)
                             .overlay(
-                                HStack {
-                                    Circle()
-                                        .fill(Color.red)
-                                        .frame(width: 10, height: 10)
-                                    Text("Migraine")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack {
+                                        Circle()
+                                            .fill(Color.red)
+                                            .frame(width: 10, height: 10)
+                                        Text("Migraine")
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                    }
+                                    
+                                    if let painScale = migraine.painScale {
+                                        Text("Pain: \(painScale)/10")
+                                            .font(.caption2)
+                                            .foregroundColor(.red)
+                                    }
+                                    
+                                    if let location = migraine.location {
+                                        Text("Location: \(location)")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(1)
+                                    }
+                                    
+                                    if let symptoms = migraine.symptoms, !symptoms.isEmpty {
+                                        Text("Symptoms: \(symptoms.prefix(2).joined(separator: ", "))")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(1)
+                                    }
                                 }
                                 .padding(.leading, 60)
-                                .padding(.top, 4),
-                                alignment: .top
+                                .padding(.top, 4)
+                                .padding(.trailing, 8),
+                                alignment: .topLeading
                             )
                             .offset(y: CGFloat(migraine.startHour) * 50)
                     }
