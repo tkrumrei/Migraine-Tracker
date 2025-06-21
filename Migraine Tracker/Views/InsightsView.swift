@@ -5,23 +5,20 @@ struct InsightsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 5) {
-                    // Only show insights for test user with data
-                    if authViewModel.currentUser?.email == "test@30five.com" {
-                        migraineSummaryCard
-                        painScaleChart
-                        symptomsAnalysis
-                        locationAnalysis
-                        timePatternAnalysis
-                    } else {
-                        noDataView
-                    }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 5) {
+                // Only show insights for test user with data
+                if authViewModel.currentUser?.email == "test@30five.com" {
+                    migraineSummaryCard
+                    painScaleChart
+                    symptomsAnalysis
+                    locationAnalysis
+                    timePatternAnalysis
+                } else {
+                    noDataView
                 }
-                .padding(.bottom, 80)
             }
-            .navigationTitle("Insights")
+            .padding(.bottom, 80)
         }
     }
     

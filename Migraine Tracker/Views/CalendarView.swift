@@ -46,10 +46,9 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
         ]
     }
     
-    // Juni 7 – Check-in + Migraine 9–12
+    // Juni 7 – Migraine 9–12
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 7)) {
         dict[date] = [
-            CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
             CalendarEvent(type: .migraine, startHour: 9, endHour: 12, 
                          symptoms: ["Headache", "Dizziness", "Sound sensitivity"], 
                          painScale: 6, 
@@ -58,10 +57,9 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
         ]
     }
     
-    // Juni 10 – Check-in + Migraine 6–8 (existing)
+    // Juni 10 – Migraine 6–8 (existing)
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 10)) {
         dict[date] = [
-            CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
             CalendarEvent(type: .migraine, startHour: 6, endHour: 8, 
                          symptoms: ["Headache", "Nausea", "Fatigue"], 
                          painScale: 9, 
@@ -81,10 +79,9 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
         ]
     }
     
-    // Juni 19 – Check-in + Migraine 11–15
+    // Juni 19 – Migraine 11–15
     if let date = calendar.date(from: DateComponents(year: 2025, month: 6, day: 19)) {
         dict[date] = [
-            CalendarEvent(type: .checkIn, startHour: 0, endHour: 0),
             CalendarEvent(type: .migraine, startHour: 11, endHour: 15, 
                          symptoms: ["Headache", "Nausea", "Vomiting", "Dizziness"], 
                          painScale: 9, 
@@ -103,6 +100,32 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
                          notes: "Mild migraine, managed with rest and hydration")
         ]
     }
+    
+    // Check-Ins
+    for offset in 1...7 {
+            if let date = calendar.date(byAdding: .day, value: -offset, to: Date()) {
+                let dayStart = calendar.startOfDay(for: date)
+                dict[dayStart, default: []].append(
+                    CalendarEvent(type: .checkIn, startHour: 0, endHour: 0)
+                )
+            }
+        }
+    for offset in 9...11 {
+            if let date = calendar.date(byAdding: .day, value: -offset, to: Date()) {
+                let dayStart = calendar.startOfDay(for: date)
+                dict[dayStart, default: []].append(
+                    CalendarEvent(type: .checkIn, startHour: 0, endHour: 0)
+                )
+            }
+        }
+    for offset in 14...18 {
+            if let date = calendar.date(byAdding: .day, value: -offset, to: Date()) {
+                let dayStart = calendar.startOfDay(for: date)
+                dict[dayStart, default: []].append(
+                    CalendarEvent(type: .checkIn, startHour: 0, endHour: 0)
+                )
+            }
+        }
     
     return dict
 }
@@ -163,8 +186,8 @@ struct MonthCalendarView: View {
                             ZStack {
                                 if isToday {
                                     Circle()
-                                        .fill(Color.cyan.opacity(0.2))
-                                        .frame(width: 24, height: 24)
+                                        .fill(Color.blue.opacity(0.2))
+                                        .frame(width: 20, height: 20)
                                 }
 
                                 Text("\(calendar.component(.day, from: date))")
@@ -191,7 +214,11 @@ struct MonthCalendarView: View {
                     .frame(width: 44, height: 50)
                     .background(types.contains(.checkIn) ? Color.green.opacity(0.15) : Color(.systemGray6))
                     .cornerRadius(10)
-                    .shadow(radius: 1)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
                     .onTapGesture {
                         selectedDate = date
                         calendarScope = .day
