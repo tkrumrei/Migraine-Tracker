@@ -1,5 +1,33 @@
 import SwiftUI
 
+func calculateCheckInStreak(currentUser: AppUser?) -> Int {
+    guard let user = currentUser,
+          user.email == "test@30five.com" else {
+        return 0
+    }
+    
+    let calendar = Calendar.current
+    let today = calendar.startOfDay(for: Date())
+    var streak = 0
+    
+    // Check consecutive days starting from today going backwards
+    for offset in 0..<365 { // Check up to a year
+        if let date = calendar.date(byAdding: .day, value: -offset, to: today) {
+            let dayStart = calendar.startOfDay(for: date)
+            let events = getTestUserEvents(currentUser: user)[dayStart] ?? []
+            let hasCheckIn = events.contains(where: { $0.type == .checkIn })
+            
+            if hasCheckIn {
+                streak += 1
+            } else {
+                break // Streak broken
+            }
+        }
+    }
+    
+    return streak
+}
+
 struct MainTabView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var themeManager: ThemeManager
@@ -19,14 +47,56 @@ struct MainTabView: View {
                 // Dashboard Tab
                 NavigationView {
                     DashboardView()
-                        .navigationTitle("Dashboard")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                HStack {
+                                    Text("Dashboard")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                    
+                                    Spacer()
+                                    
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "flame.fill")
+                                            .foregroundColor(.orange)
+                                            .font(.title2)
+                                        Text("\(calculateCheckInStreak(currentUser: authViewModel.currentUser))")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.orange)
+                                    }
+                                }
+                            }
+                        }
                 }
                 .tag(0)
                 
                 // Calendar Tab
                 NavigationView {
                     CalendarView()
-                        .navigationTitle("Calendar")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                HStack {
+                                    Text("Calendar")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                    
+                                    Spacer()
+                                    
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "flame.fill")
+                                            .foregroundColor(.orange)
+                                            .font(.title2)
+                                        Text("\(calculateCheckInStreak(currentUser: authViewModel.currentUser))")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.orange)
+                                    }
+                                }
+                            }
+                        }
                 }
                 .tag(1)
                 
@@ -37,14 +107,56 @@ struct MainTabView: View {
                 // Insights Tab
                 NavigationView {
                     InsightsView()
-                        .navigationTitle("Insights")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                HStack {
+                                    Text("Insights")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                    
+                                    Spacer()
+                                    
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "flame.fill")
+                                            .foregroundColor(.orange)
+                                            .font(.title2)
+                                        Text("\(calculateCheckInStreak(currentUser: authViewModel.currentUser))")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.orange)
+                                    }
+                                }
+                            }
+                        }
                 }
                 .tag(3)
                 
                 // Profile Tab
                 NavigationView {
                     ProfileView()
-                        .navigationTitle("Profile")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                HStack {
+                                    Text("Profile")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                    
+                                    Spacer()
+                                    
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "flame.fill")
+                                            .foregroundColor(.orange)
+                                            .font(.title2)
+                                        Text("\(calculateCheckInStreak(currentUser: authViewModel.currentUser))")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.orange)
+                                    }
+                                }
+                            }
+                        }
                 }
                 .tag(4)
             }

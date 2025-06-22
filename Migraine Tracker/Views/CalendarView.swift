@@ -25,6 +25,7 @@ struct CalendarEvent {
     }
 }
 
+
 func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
     // Only show test data for test user
     guard let user = currentUser,
@@ -102,7 +103,7 @@ func getTestUserEvents(currentUser: AppUser?) -> [Date: [CalendarEvent]] {
     }
     
     // Check-Ins
-    for offset in 1...7 {
+    for offset in 0...7 {
             if let date = calendar.date(byAdding: .day, value: -offset, to: Date()) {
                 let dayStart = calendar.startOfDay(for: date)
                 dict[dayStart, default: []].append(
